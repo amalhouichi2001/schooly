@@ -58,31 +58,30 @@ class EleveController extends Controller
         return view('eleves.create', compact('classes', 'parents'));
     }
 
-    public function store(Request $request)
+   public function store(Request $request)
 {
     $validated = $request->validate([
-        'nom' => 'required|string',
-        'prenom' => 'required|string',
-        'adresse' => 'nullable|string',
+        'name' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'adresse' => 'nullable|string|max:255',
         'date_naissance' => 'required|date',
         'classe_id' => 'required|exists:classes,id',
         'email' => 'required|email|unique:users,email',
-        'telephone' => 'required|string',
-        'gender' => 'required|string',
+        'telephone' => 'required|string|max:20',
+        'gender' => 'required|in:male,female',
         'password' => 'required|string|min:6',
-        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         'parents' => 'nullable|array',
         'parents.*' => 'exists:users,id',
     ]);
 
-    // Gérer l'upload de la photo si présente
     $photoPath = null;
     if ($request->hasFile('profile_photo_path')) {
         $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
     }
 
     $user = User::create([
-        'name' => $validated['nom'],
+        'name' => $validated['name'],
         'prenom' => $validated['prenom'],
         'adresse' => $validated['adresse'] ?? null,
         'date_naissance' => $validated['date_naissance'],
@@ -92,10 +91,9 @@ class EleveController extends Controller
         'email' => $validated['email'],
         'password' => bcrypt($validated['password']),
         'role' => 'eleve',
-        'profile_photo_path' => $photoPath, // enregistre le chemin
+        'profile_photo_path' => $photoPath,
     ]);
 
-    // Association avec les parents
     if (isset($validated['parents'])) {
         $user->parents()->sync($validated['parents']);
     }
@@ -117,31 +115,32 @@ class EleveController extends Controller
         return view('eleves.edit', compact('eleve', 'classes'));
     }
 
-    public function update(Request $request, $id)
-    {
-        $eleve = User::where('role', 'eleve')->findOrFail($id);
+   public function update(Request $request, $id)
+{
+    $eleve = User::where('role', 'eleve')->findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'adresse' => 'nullable|string|max:255',
-            'telephone' => 'nullable|string|max:20',
-            'date_naissance' => 'required|date',
-            'gender' => 'required|in:male,female',
-            'classe_id' => 'required|exists:classes,id',
-            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'adresse' => 'nullable|string|max:255',
+        'telephone' => 'nullable|string|max:20',
+        'date_naissance' => 'required|date',
+        'gender' => 'required|in:male,female',
+        'classe_id' => 'required|exists:classes,id',
+        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+    ]);
 
-        // Upload de l'image si présente
-        if ($request->hasFile('profile_photo_path')) {
-            $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
-            $validated['profile_photo_path'] = $photoPath;
-        }
-
-        $eleve->update($validated);
-
-        return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
+    // Upload de l'image si présente
+    if ($request->hasFile('profile_photo_path')) {
+        $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
+        $validated['profile_photo_path'] = $photoPath;
     }
+
+    $eleve->update($validated);
+
+    return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
+}
+
 
 
     public function destroy($id)
