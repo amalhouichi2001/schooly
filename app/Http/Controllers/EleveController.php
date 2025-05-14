@@ -8,6 +8,8 @@ use App\Models\Exercice;
 use App\Models\Seance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
 
 class EleveController extends Controller
 {
@@ -115,31 +117,38 @@ class EleveController extends Controller
         return view('eleves.edit', compact('eleve', 'classes'));
     }
 
-   public function update(Request $request, $id)
-{
-    $eleve = User::where('role', 'eleve')->findOrFail($id);
-
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'adresse' => 'nullable|string|max:255',
-        'telephone' => 'nullable|string|max:20',
-        'date_naissance' => 'required|date',
-        'gender' => 'required|in:male,female',
-        'classe_id' => 'required|exists:classes,id',
-        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-    ]);
-
-    // Upload de l'image si présente
-    if ($request->hasFile('profile_photo_path')) {
-        $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
-        $validated['profile_photo_path'] = $photoPath;
+    public function update(Request $request, $id)
+    {
+        $eleve = User::where('role', 'eleve')->findOrFail($id);
+    
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'adresse' => 'nullable|string|max:255',
+            'telephone' => 'nullable|string|max:20',
+            'date_naissance' => 'required|date',
+            'gender' => 'required|in:male,female',
+            'classe_id' => 'required|exists:classes,id',
+            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+    
+        // Upload new image and delete old if needed
+        if ($request->hasFile('profile_photo_path')) {
+            // Delete old image if it exists
+            if ($eleve->profile_photo_path && Storage::disk('public')->exists($eleve->profile_photo_path)) {
+                Storage::disk('public')->delete($eleve->profile_photo_path);
+            }
+    
+            // Store new image
+            $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
+            $validated['profile_photo_path'] = $photoPath;
+        }
+    
+        $eleve->update($validated);
+    
+        return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
     }
-
-    $eleve->update($validated);
-
-    return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
-}
+    
 
 
 
