@@ -3,14 +3,22 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4"><i class="bi bi-person-plus-fill"></i> Ajouter un élève</h2>
-
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <form action="{{ route('eleves.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="row mb-3">
             <div class="col-md-4">
-                <label for="nom" class="form-label">Nom</label>
-                <input type="text" name="nom" class="form-control" required>
+                <label for="name" class="form-label">Nom</label>
+                <input type="text" name="name" class="form-control" required>
             </div>
             <div class="col-md-4">
                 <label for="prenom" class="form-label">Prénom</label>
@@ -49,7 +57,7 @@
                 <label for="classe_id" class="form-label">Classe</label>
                 <select name="classe_id" class="form-select">
                     @foreach($classes as $classe)
-                        <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
+                    <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
                     @endforeach
                 </select>
             </div>
@@ -57,7 +65,7 @@
                 <label for="parent_id" class="form-label">Parent</label>
                 <select name="parent_id" class="form-select" required>
                     @foreach($parents as $parent)
-                        <option value="{{ $parent->id }}">{{ $parent->name }} ({{ $parent->email }})</option>
+                    <option value="{{ $parent->id }}">{{ $parent->name }} ({{ $parent->email }})</option>
                     @endforeach
                 </select>
             </div>
