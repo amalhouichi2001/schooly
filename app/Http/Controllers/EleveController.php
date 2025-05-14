@@ -79,7 +79,7 @@ class EleveController extends Controller
 
     $photoPath = null;
     if ($request->hasFile('profile_photo_path')) {
-        $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
+        $photoPath = $request->file('profile_photo_path')->store('images', 'public');
     }
 
     $user = User::create([
@@ -93,7 +93,7 @@ class EleveController extends Controller
         'email' => $validated['email'],
         'password' => bcrypt($validated['password']),
         'role' => 'eleve',
-        'profile_photo_path' => $photoPath,
+         'profile_photo_path' => $photoPath,
     ]);
 
     if (isset($validated['parents'])) {

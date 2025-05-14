@@ -23,7 +23,7 @@ class Note extends Model
         return $this->belongsTo(User::class, 'eleve_id');
     }
 
-    public function matiere()
+    public function matieres()
     {
         return $this->belongsTo(Matiere::class);
     }
