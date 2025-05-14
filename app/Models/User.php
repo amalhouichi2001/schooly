@@ -80,9 +80,9 @@ class User extends Authenticatable
     }
 
     public function isEnseignant()
-    {
-        return $this->role === 'enseignant';
-    }
+{
+    return $this->role === 'enseignant';
+}
 
     public function isEleve()
     {

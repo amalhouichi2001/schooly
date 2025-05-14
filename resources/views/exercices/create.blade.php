@@ -36,6 +36,11 @@
                 @endforeach
             </select>
         </div>
+        <div class="form-group">
+    <label for="contenu">Contenu</label>
+    <textarea name="contenu" class="form-control" required>{{ old('contenu') }}</textarea>
+</div>
+
 
         <div class="mb-3">
             <label for="date_limite" class="form-label">Date Limite</label>

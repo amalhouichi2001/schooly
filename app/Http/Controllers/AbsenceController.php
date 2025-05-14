@@ -22,18 +22,21 @@ class AbsenceController extends Controller
     public function ajouterJustification(Request $request)
 {
     $request->validate([
-        'eleve_id' => 'required|exists:eleves,id',
-        'absence_id' => 'required|exists:absences,id',
-        'motif' => 'required|string|max:255',
-    ]);
+    'eleve_id' => 'required|exists:users,id',
+    'absence_id' => 'required|exists:absences,id',
+    'motif' => 'required|string|max:255',
+]);
+
 
     // Trouver l'absence
     $absence = Absence::find($request->absence_id);
 
     // Ajouter la justification
-    $absence->motif = $request->motif;
-    $absence->justifie = true;  // Marquer comme justifiée
-    $absence->save();
+    $absence = Absence::find($request->absence_id);
+$absence->justifie = true;
+$absence->motif = $request->motif;
+$absence->save();
+
 
     return redirect()->back()->with('success', 'Justification ajoutée avec succès');
 }

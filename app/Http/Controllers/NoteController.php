@@ -11,23 +11,24 @@ use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
-    public function index(Request $request)
+ public function index(Request $request)
 {
     $classe_id = $request->input('classe_id');
-    $classes = Classe::all();
+    $matiere_nom = $request->input('matiere');
 
-    // Récupérer les élèves de la classe
-    $eleves = User::where('role', 'eleve')
-        ->when($classe_id, function ($query) use ($classe_id) {
-            $query->where('classe_id', $classe_id);
-        })
-        ->get();
+    $notes = Note::with(['eleve', 'matiere', 'enseignant'])
+                 ->whereHas('eleve', function ($query) use ($classe_id) {
+                     $query->where('classe_id', $classe_id);
+                 })
+                 ->whereHas('matiere', function ($query) use ($matiere_nom) {
+                     $query->where('nom', $matiere_nom);
+                 })
+                 ->get();
 
-    // Récupérer les notes des élèves de la classe
-    $notes = Note::whereIn('eleve_id', $eleves->pluck('id'))->get();
-
-    return view('notes.index', compact('classes', 'eleves', 'notes', 'classe_id'));
+    return view('notes.index', compact('notes'));
 }
+
+
 
 
     

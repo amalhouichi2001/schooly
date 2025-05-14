@@ -8,25 +8,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class ExerciceController extends Controller
 {
-    public function index()
+ public function index()
 {
-    $enseignant = auth()->user()->enseignant;
+    $enseignantId = auth()->id(); // ou auth()->user()->id
 
-    if (!$enseignant) {
-        abort(403, 'Aucun enseignant lié à cet utilisateur.');
-    }
-
-    $exercices = Exercice::where('enseignant_id', $enseignant->id)->get();
+    $exercices = Exercice::where('enseignant_id', $enseignantId)->get();
 
     return view('exercices.index', compact('exercices'));
 }
 
-    public function create()
-    {
-        $enseignant = auth()->user()->enseignant;
-        $classes = Classe::all();
-        return view('exercices.create', compact('classes', 'enseignant'));
-    }
+
+    
+public function create()
+{
+    $classes = Classe::all(); // ou avec un filtrage si nécessaire
+    return view('exercices.create', compact('classes'));
+}
     public function show($id)
 {
     $exercice = Exercice::findOrFail($id);

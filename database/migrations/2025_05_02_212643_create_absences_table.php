@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('eleve_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('seance_id')->constrained()->onDelete('cascade');
             $table->foreignId('enseignant_id')->constrained('users')->onDelete('cascade'); // User avec rôle "enseignant"
-            $table->text('motif')->nullable(); // facultatif
+            $table->text('motif')->nullable(); 
+            $table->boolean('justifie')->default(false);// facultatif
             $table->date('date'); // doublon de sécurité en plus de seance.date
             $table->timestamps();
         });

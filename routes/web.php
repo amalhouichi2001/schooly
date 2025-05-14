@@ -8,31 +8,22 @@ use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\EnseignantController;
-use App\Http\Controllers\EmploiTempsController;
+
 use App\Http\Controllers\ParentUserController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ExerciceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\SeanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-=======
-use App\Http\Controllers\Auth\RegisteredUserController;
-
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a
 
 /*
 |----------------------------------------------------------------------
 | Web Routes
 |----------------------------------------------------------------------
 */
-<<<<<<< HEAD
-Route::get('/absence', [AbsenceController::class, 'index'])->name('absence.index');
-Route::get('/classes/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'eleves'])->name('classes.eleves');
-=======
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a
+
 
 Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('parents.inscription.form');
 Route::post('/inscription', [InscriptionController::class, 'store'])->name('parents.inscription.store');
@@ -123,7 +114,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('eleves', EleveController::class);
     Route::resource('absences', AbsenceController::class);
     Route::resource('notes', NoteController::class);
-    Route::resource('emploi', EmploiTempsController::class);
+  
     Route::resource('classes', ClasseController::class);
     Route::resource('exercices', ExerciceController::class);
     Route::resource('enseignants', EnseignantController::class);
@@ -147,8 +138,7 @@ Route::middleware('auth')->group(function () {
     // Justifier l'absence
     Route::post('/absences/justifier', [AbsenceController::class, 'justifier'])->name('absences.justifier');
 
-    Route::get('/emplois', [EmploiTempsController::class, 'index'])->name('emploi.index');
-    Route::get('/emplois/{id}', [EmploiTempsController::class, 'show'])->name('emploi.show');
+    
     Route::get('/enseignant/classe/{classeId}/eleves', [AbsenceController::class, 'getElevesByClasse']);
     Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
     Route::post('/absences/justifier', [AbsenceController::class, 'storeAjax'])->name('absences.justifier');
@@ -160,7 +150,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/enseignant/classes', [EnseignantController::class, 'classes'])->name('enseignant.classes');
 
     Route::get('/enseignant/exercice', [EnseignantController::class, 'exercice'])->name('enseignant.exercice');
-    Route::get('/emploi', [EmploiTempsController::class, 'index'])->name('emploi.index');
+   
 
     // Routes spécifiques aux parents
     Route::middleware(['auth'])->group(function () {
@@ -186,7 +176,7 @@ Route::middleware('auth')->group(function () {
 
 
     // Routes élève
-    Route::get('/eleves/emploi', [EmploiTempsController::class, 'index'])->name('eleves.emploi');
+   
     Route::get('/eleve/exercices', [EleveController::class, 'exercices'])->name('eleves.exercices');
     Route::get('/eleve/exercices/{id}', [EleveController::class, 'showExercice'])->name('eleves.exercice.show');
     Route::get('/eleve/notes', [NoteController::class, 'mesNotes'])->name('eleves.notes')->middleware('auth');
@@ -197,7 +187,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 });
 
-<<<<<<< HEAD
 Route::get('/register', [RegisteredUserController::class, 'showRegistrationForm'])->name('register');
 
 // Traitement de l'inscription (POST)
@@ -224,7 +213,7 @@ Route::get('/dashboard', function () {
 Route::resource('eleves', EleveController::class);
 Route::resource('absences', AbsenceController::class);
 Route::resource('notes', NoteController::class);
-Route::resource('emploi', EmploiTempsController::class);
+
 Route::resource('classes', ClasseController::class);
 Route::resource('exercices', ExerciceController::class);
 Route::resource('enseignants', EnseignantController::class);
@@ -241,7 +230,11 @@ Route::get('/enseignant/classe/{id}/eleves', [App\Http\Controllers\ClasseControl
 // Marquer l'absence
 Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
 Route::post('absences/justification', [AbsenceController::class, 'ajouterJustification'])->name('absences.justification');
-
+//enseignant
+Route::get('exercices/create', [ExerciceController::class, 'create'])->name('exercices.create');
+Route::get('/absence', [AbsenceController::class, 'index'])->name('absence.index');
+Route::get('/classes/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'eleves'])->name('classes.eleves');
+;
 
 
 
@@ -250,11 +243,9 @@ Route::get('/absences/{id}', [AbsenceController::class, 'show'])->name('absences
 Route::get('/exercices/{id}', [ExerciceController::class, 'show'])->name('exercices.show');
 
 
-// Justifier l'absence
-Route::post('/absences/justifier', [AbsenceController::class, 'justifier'])->name('absences.justifier');
 
-Route::get('/emplois', [EmploiTempsController::class, 'index'])->name('emploi.index');
-Route::get('/emplois/{id}', [EmploiTempsController::class, 'show'])->name('emploi.show');
+
+
 Route::get('/enseignant/classe/{classeId}/eleves', [AbsenceController::class, 'getElevesByClasse']);
 Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
 Route::post('/absences/justifier', [AbsenceController::class, 'storeAjax'])->name('absences.justifier');
@@ -266,7 +257,7 @@ Route::post('/absences/store-ajax', [AbsenceController::class, 'storeAjax'])->na
 Route::get('/enseignant/classes', [EnseignantController::class, 'classes'])->name('enseignant.classes');
 
 Route::get('/enseignant/exercice', [EnseignantController::class, 'exercice'])->name('enseignant.exercice');
-Route::get('/emploi', [EmploiTempsController::class, 'index'])->name('emploi.index');
+
 
 // Routes spécifiques aux parents
 Route::middleware(['auth'])->group(function () {
@@ -292,7 +283,7 @@ Route::post('/paiement/{inscription_id}', [PaiementController::class, 'store'])-
 
 
 // Routes élève
-Route::get('/eleves/emploi', [EmploiTempsController::class, 'index'])->name('eleves.emploi');
+
 Route::get('/eleve/exercices', [EleveController::class, 'exercices'])->name('eleves.exercices');
 Route::get('/eleve/exercices/{id}', [EleveController::class, 'showExercice'])->name('eleves.exercice.show');
 Route::get('/eleve/notes', [NoteController::class, 'mesNotes'])->name('eleves.notes')->middleware('auth');
@@ -302,7 +293,31 @@ Route::get('/eleve/emploi', [EleveController::class, 'monEmploi'])->name('eleves
 Route::get('/register', [RegisteredUserController::class, 'create'])->middleware('guest')->name('register');
 Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
+
+    Route::middleware('can:manage-notes')->group(function () {
+        Route::get('/notes/{id}/edit', [NoteController::class, 'edit'])->name('notes.edit');
+        Route::put('/notes/{id}', [NoteController::class, 'update'])->name('notes.update');
+        Route::delete('/notes/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    });
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    // Routes Admin
+    Route::resource('seance', SeanceController::class)->middleware('is_admin');
+    // Affichage emploi du temps pour élèves, parents et enseignants
+    Route::get('emploi', [SeanceController::class, 'index'])->name('emploi.index');
+    Route::get('emploi/{classe}', [SeanceController::class, 'show'])->name('emploi.show');
+    Route::get('/seances/create', [SeanceController::class, 'create'])->name('seances.create');
+    Route::get('/seances/show', [SeanceController::class, 'show'])->name('seances.show');
+    Route::get('/seances/edit', [SeanceController::class, 'edit'])->name('seances.edit');
+    Route::get('/seances/destroy', [SeanceController::class, 'destroy'])->name('seances.destroy');
+});
 require __DIR__.'/auth.php';
-=======
-require __DIR__ . '/auth.php';
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a
+
+
+
+

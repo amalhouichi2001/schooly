@@ -25,7 +25,7 @@ return new class extends Migration
             $table->time('heure_debut');
             $table->time('heure_fin');
             $table->integer('duration'); // en minutes
-
+            
             // Matière et salle (relations)
             $table->foreignId('matiere_id')->constrained('matieres')->onDelete('cascade');
             $table->foreignId('salle_id')->constrained('salles')->onDelete('cascade');

@@ -20,9 +20,10 @@ return new class extends Migration
             $table->foreignId('classe_id')->constrained('classes')->onDelete('cascade');
 
             $table->string('titre');
-            $table->text('contenu');
-            $table->date('date_limite')->nullable();
+            $table->text('contenu')->nullable();
 
+            $table->date('date_limite')->nullable();
+            $table->string('fichier')->nullable();      
             $table->timestamps();
         });
     }
