@@ -51,10 +51,11 @@ class SeanceController extends Controller
     }
 
     public function show($id)
-    {
-        $seance = Seance::with(['matiere', 'salle'])->findOrFail($id);
-        return view('seances.show', compact('seance'));
-    }
+{
+    $seance = Seance::with(['matiere', 'salle'])->findOrFail($id);
+    return view('seances.show', compact('seance'));
+}
+
 
     public function edit($id)
     {

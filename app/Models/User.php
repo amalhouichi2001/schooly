@@ -36,7 +36,7 @@ class User extends Authenticatable
         'adresse',
         'date_naissance',
         'telephone',
-        'specialite',
+        'matiere_id',
         'classe_id',
         'profile_photo_path',
 

@@ -36,7 +36,7 @@
                 <td>{{ ucfirst($seance->type) }}</td>
                 <td>{{ $seance->classe->nom ?? '' }}</td> {{-- Affiche le nom de la classe --}}
                 <td>
-                    <a href="{{ route('seances.show', $seance->id) }}" class="btn btn-info btn-sm">Voir</a>
+                    
 
                     @if(Auth::check() && Auth::user()->is_admin)
                         <a href="{{ route('seances.edit', $seance->id) }}" class="btn btn-warning btn-sm">Modifier</a>

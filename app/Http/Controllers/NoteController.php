@@ -8,25 +8,29 @@ use App\Models\Classe;
 use App\Models\matiere;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 class NoteController extends Controller
 {
- public function index(Request $request)
+public function index(Request $request)
 {
+    $classes = Classe::all();
+    $matieres = Matiere::all();
+
     $classe_id = $request->input('classe_id');
-    $matiere_nom = $request->input('matiere');
+    $matiere = $request->input('matiere');
 
-    $notes = Note::with(['eleve', 'matiere', 'enseignant'])
-                 ->whereHas('eleve', function ($query) use ($classe_id) {
-                     $query->where('classe_id', $classe_id);
-                 })
-                 ->whereHas('matiere', function ($query) use ($matiere_nom) {
-                     $query->where('nom', $matiere_nom);
-                 })
-                 ->get();
+    // Récupérer les élèves uniquement si une classe est sélectionnée
+    $eleves = collect(); // une collection vide par défaut
 
-    return view('notes.index', compact('notes'));
+    if ($classe_id && $matiere) {
+        $eleves = User::where('role', 'eleve')
+                      ->where('classe_id', $classe_id)
+                      ->get();
+    }
+
+    return view('notes.index', compact('classes', 'matieres', 'classe_id', 'matiere', 'eleves'));
 }
+
 
 
 
@@ -55,35 +59,44 @@ class NoteController extends Controller
 
     
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'classe_id' => 'required|exists:classes,id',
-            'notes' => 'required|array',
-            'notes.*.eleve_id' => 'required|exists:users,id',
-            'notes.*.matiere' => 'required|string|max:255',
-            'notes.*.valeur' => 'required|numeric|min:0|max:20',
-        ]);
+   public function store(Request $request)
+{
+    $request->validate([
+        'classe_id' => 'required|exists:classes,id',
+        'notes' => 'required|array',
+        'notes.*.eleve_id' => 'required|exists:users,id',
+        'notes.*.matiere' => 'required|string|max:255',
+        'notes.*.valeur' => 'required|numeric|min:0|max:20',
+    ]);
 
-        $enseignant = Auth::user();
+    $enseignant = Auth::user();
 
-        if (!$enseignant || $enseignant->role !== 'enseignant') {
-            return redirect()->back()->withErrors("Seul un enseignant peut enregistrer des notes.");
-        }
+    if (!$enseignant || $enseignant->role !== 'enseignant') {
+        return redirect()->back()->withErrors("Seul un enseignant peut enregistrer des notes.");
+    }
 
+    DB::beginTransaction();
+
+    try {
         foreach ($request->notes as $noteData) {
             Note::create([
                 'eleve_id' => $noteData['eleve_id'],
                 'enseignant_id' => $enseignant->id,
-                'matiere' => $noteData['matiere'],
+                'matiere' => $noteData['matiere'], 
                 'valeur' => $noteData['valeur'],
                 'classe_id' => $request->classe_id,
             ]);
         }
 
+        DB::commit();
         return redirect()->route('notes.index')->with('success', 'Notes enregistrées avec succès.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->withErrors('Erreur lors de l’enregistrement des notes : ' . $e->getMessage());
     }
-    public function create()
+}
+function create()
 {
     $enseignant = Auth::user();
 

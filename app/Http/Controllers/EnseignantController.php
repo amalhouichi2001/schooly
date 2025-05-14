@@ -2,174 +2,111 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Enseignant;
 use App\Models\User;
-use App\Models\Exercice;
-use App\Models\Classe;
+use App\Models\Matiere;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Storage;
 
 class EnseignantController extends Controller
 {
-    /**
-     * Afficher la liste des enseignants.
-     */
-   public function classes()
-{
-    $classes = Classe::all(); // récupère toutes les classes
-
-    return view('classes.index', compact('classes'));
-}
-public function exercice()
-{
-    $exercices = Exercice::with('classe')->get(); // N'oublie pas le 'use App\Models\Exercice;'
-
-    return view('exercices.index', compact('exercices'));
-}
-
-
-
     public function index()
     {
-        $enseignants = Enseignant::all();
+        $enseignants = User::where('role', 'enseignant')->get();
         return view('enseignants.index', compact('enseignants'));
     }
 
-    /**
-     * Afficher le formulaire de création.
-     */
     public function create()
     {
-        return view('enseignants.create');
+        $matieres = Matiere::all();
+        return view('enseignants.create', compact('matieres'));
     }
 
-    /**
-     * Enregistrer un nouvel enseignant.
-     */
     public function store(Request $request)
-{
-    $request->validate([
-        'nom' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-        'password' => 'required|string|min:6|confirmed',
-        'specialite' => 'required|string|max:255',
-    ]);
-
-    try {
-        DB::beginTransaction();
-
-        $user = User::create([
-            'name' => $request->prenom . ' ' . $request->nom,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'enseignant',
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:8',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+            'date_naissance' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
+            'matiere_id' => 'nullable|exists:matieres,id',
+            'profile_photo_path' => 'nullable|image|max:2048',
+            'statut' => 'in:active,desactive',
         ]);
 
-        Enseignant::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'email' => $request->email,
-            'specialite' => $request->specialite,
-            'user_id' => $user->id,
-        ]);
+        $data['role'] = 'enseignant';
+        $data['password'] = bcrypt($data['password']);
 
-        DB::commit();
+        if ($request->hasFile('profile_photo_path')) {
+            $data['profile_photo_path'] = $request->file('profile_photo_path')->store('photos', 'public');
+        }
 
-        return redirect()->route('enseignants.index')->with('success', 'Enseignant créé avec succès.');
+        User::create($data);
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Erreur lors de la création : ' . $e->getMessage());
+        return redirect()->route('enseignants.index')->with('success', 'Enseignant ajouté avec succès.');
     }
-}
 
-    /**
-     * Afficher le formulaire d'édition.
-     */
     public function edit($id)
     {
-        $enseignant = Enseignant::findOrFail($id);
-        return view('enseignants.edit', compact('enseignant'));
+        $enseignant = User::where('role', 'enseignant')->findOrFail($id);
+        $matieres = Matiere::all();
+        return view('enseignants.edit', compact('enseignant', 'matieres'));
     }
 
-    /**
-     * Mettre à jour un enseignant existant.
-     */
     public function update(Request $request, $id)
     {
-        $enseignant = Enseignant::findOrFail($id);
+        $enseignant = User::where('role', 'enseignant')->findOrFail($id);
 
-        $request->validate([
-            'nom' => 'required|string|max:255',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'specialite' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $enseignant->id,
+            'gender' => 'required|in:male,female',
+            'telephone' => 'required|string|max:20',
+            'adresse' => 'nullable|string|max:255',
+            'date_naissance' => 'required|date',
+            'matiere_id' => 'nullable|exists:matieres,id',
+            'password' => 'nullable|string|min:6',
+            'statut'=>'in:active,desactive',
+            'profile_photo_path' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Mise à jour des données de l'enseignant
-        $enseignant->update([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'specialite' => $request->specialite,
-        ]);
-
-        // Mise à jour du nom dans la table users
-        if ($enseignant->user) {
-            $enseignant->user->update([
-                'name' => $request->prenom . ' ' . $request->nom,
-            ]);
+        if ($request->hasFile('profile_photo_path')) {
+            if ($enseignant->profile_photo_path) {
+                Storage::disk('public')->delete($enseignant->profile_photo_path);
+            }
+            $validated['profile_photo_path'] = $request->file('profile_photo_path')->store('enseignants', 'public');
         }
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $enseignant->update($validated);
 
         return redirect()->route('enseignants.index')->with('success', 'Enseignant mis à jour avec succès.');
     }
-    public function emploi()
+
+    public function destroy($id)
     {
-        $enseignantId = Auth::user()->id;
-    
-        // Récupérer les séances de l’emploi du temps du professeur connecté
-        $emplois = DB::table('emploi_temps')
-            ->where('enseignant_id', $enseignantId)
-            ->orderBy('jour')
-            ->orderBy('heure_debut')
-            ->get();
-    
-        // Grouper par jour
-        $grouped = $emplois->groupBy('jour');
-    
-        return view('enseignants.emploi', compact('grouped'));
-    }
-    
-    public function indexens()
-    {
-        $classes = Classe::all();
-        return view('enseignant.absences', compact('classes'));
+        $enseignant = User::where('role', 'enseignant')->findOrFail($id);
+        if ($enseignant->profile_photo_path) {
+            Storage::disk('public')->delete($enseignant->profile_photo_path);
+        }
+        $enseignant->delete();
+
+        return redirect()->route('enseignants.index')->with('success', 'Enseignant supprimé.');
     }
 
-    public function getEleves($id)
+    public function show($id)
     {
-        $eleves = Eleve::where('classe_id', $id)->get();
-        return response()->json($eleves);
-    }
-
-    public function storeAbsence(Request $request)
-    {
-        $request->validate([
-            'eleve_id' => 'required|exists:eleves,id',
-            'date' => 'required|date',
-            'justifie' => 'boolean',
-            'motif' => 'nullable|string',
-        ]);
-
-        Absence::create([
-            'eleve_id' => $request->eleve_id,
-            'date' => $request->date,
-            'justifie' => $request->justifie ?? false,
-            'motif' => $request->motif,
-        ]);
-
-        return response()->json(['message' => 'Absence enregistrée avec succès.']);
+        $enseignant = User::where('role', 'enseignant')->findOrFail($id);
+        return view('enseignants.show', compact('enseignant'));
     }
 }

@@ -24,7 +24,6 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 |----------------------------------------------------------------------
 */
 
-
 Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('parents.inscription.form');
 Route::post('/inscription', [InscriptionController::class, 'store'])->name('parents.inscription.store');
 Route::post('/parent/inscription', [ParentUserController::class, 'storeInscription'])->name('parents.inscription.store');
@@ -69,6 +68,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [EleveController::class, 'update'])->name('update'); // Update élève
         Route::delete('/{id}', [EleveController::class, 'destroy'])->name('destroy'); // Delete élève
         Route::get('/{id}', [EleveController::class, 'show'])->name('show'); // Optional: show details
+    });
+    // enseignants routes
+    Route::prefix('enseignants')->name('enseignants.')->group(function () {
+        Route::get('enseignants', [EnseignantController::class, 'index'])->name('index');
+        Route::get('enseignants/create', [EnseignantController::class, 'create'])->name('create');
+        Route::post('enseignants', [EnseignantController::class, 'store'])->name('store');
+        Route::get('enseignants/{id}/edit', [EnseignantController::class, 'edit'])->name('edit');
+        Route::put('enseignants/{id}', [EnseignantController::class, 'update'])->name('update');
+        Route::delete('enseignants/{id}', [EnseignantController::class, 'destroy'])->name('destroy');
     });
 
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
@@ -187,137 +195,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 });
 
-Route::get('/register', [RegisteredUserController::class, 'showRegistrationForm'])->name('register');
+Route::get('/emploi', [SeanceController::class, 'index'])->name('emploi.index');
+Route::get('/emploi/create', [SeanceController::class, 'create'])->name('emploi.create');
+Route::get('/emploi/show/{id}', [SeanceController::class, 'show'])->name('seances.show');
 
-// Traitement de l'inscription (POST)
-Route::post('/register', [RegisteredUserController::class, 'register']);
-// Routes dashboard
-Route::get('/dashboard', function () {
-    $user = Auth::user();
-
-    switch ($user->role) {
-        case 'admin':
-            return view('dashboards.admin');
-        case 'eleve':
-            return view('dashboards.eleve');
-        case 'enseignant':
-            return view('dashboards.enseignant');
-        case 'parent':
-            return view('dashboards.parent');
-        default:
-            abort(403, 'Accès non autorisé.');
-    }
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Routes avec contrôleurs de ressources
-Route::resource('eleves', EleveController::class);
-Route::resource('absences', AbsenceController::class);
-Route::resource('notes', NoteController::class);
-
-Route::resource('classes', ClasseController::class);
-Route::resource('exercices', ExerciceController::class);
-Route::resource('enseignants', EnseignantController::class);
-Route::resource('parents', ParentUserController::class);
-
-Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-
-
-
-
-Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
-
-Route::get('/enseignant/classe/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'getEleves']);
-// Marquer l'absence
-Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
-Route::post('absences/justification', [AbsenceController::class, 'ajouterJustification'])->name('absences.justification');
-//enseignant
-Route::get('exercices/create', [ExerciceController::class, 'create'])->name('exercices.create');
-Route::get('/absence', [AbsenceController::class, 'index'])->name('absence.index');
-Route::get('/classes/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'eleves'])->name('classes.eleves');
-;
-
-
-
-
-Route::get('/absences/{id}', [AbsenceController::class, 'show'])->name('absences.show');
-Route::get('/exercices/{id}', [ExerciceController::class, 'show'])->name('exercices.show');
-
-
-
-
-
-Route::get('/enseignant/classe/{classeId}/eleves', [AbsenceController::class, 'getElevesByClasse']);
-Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
-Route::post('/absences/justifier', [AbsenceController::class, 'storeAjax'])->name('absences.justifier');
-
-Route::get('enseignant/classe/{classe}/eleves', [AbsenceController::class, 'getElevesByClasse'])
-     ->name('enseignant.classe.eleves');
-Route::post('/absences/store-ajax', [AbsenceController::class, 'storeAjax'])->name('absences.storeAjax');
-
-Route::get('/enseignant/classes', [EnseignantController::class, 'classes'])->name('enseignant.classes');
-
-Route::get('/enseignant/exercice', [EnseignantController::class, 'exercice'])->name('enseignant.exercice');
-
-
-// Routes spécifiques aux parents
-Route::middleware(['auth'])->group(function () {
-    Route::get('/enseignant/absences', [EnseignantController::class, 'indexen'])->name('enseignant.absences');
-    Route::get('/enseignant/classe/{id}/eleves', [EnseignantController::class, 'getEleves']);
-    Route::post('/enseignant/absence', [EnseignantController::class, 'storeAbsence'])->name('enseignant.absence.store');
-});
-Route::get('/parent/inscription', [ParentUserController::class, 'formInscription'])->name('parent.inscription.form');
-
-Route::get('/parent/enfants', [ParentUserController::class, 'mesEnfants'])->name('parents.enfants');
-
-Route::post('/parents/inscription/{eleve_id}', [ParentUserController::class, 'storeinscriptions'])->name('parent.store.inscription');
-
-Route::post('/parent/{id}/inscription', [ParentUserController::class, 'submitInscription'])->name('parent.inscription.submit');
-
-Route::post('/parents/paiement/{id}', [ParentUserController::class, 'paiement'])->name('parents.paiement');
-Route::get('/parents/facture/{id}', [ParentUserController::class, 'genererFacturePDF'])->name('parents.facture.pdf');
-Route::get('parent/{id}/inscription', [ParentUserController::class, 'inscription']);
-Route::get('/parent/absences', [ParentUserController::class, 'absences'])->name('parents.absences');
-// Routes pour l'inscription d'un élève
-Route::post('/inscription/{eleve_id}/valider', [InscriptionController::class, 'valider'])->name('inscription.valider');
-Route::post('/paiement/{inscription_id}', [PaiementController::class, 'store'])->name('parents.paiement');
-
-
-// Routes élève
-
-Route::get('/eleve/exercices', [EleveController::class, 'exercices'])->name('eleves.exercices');
-Route::get('/eleve/exercices/{id}', [EleveController::class, 'showExercice'])->name('eleves.exercice.show');
-Route::get('/eleve/notes', [NoteController::class, 'mesNotes'])->name('eleves.notes')->middleware('auth');
-Route::get('/eleve/emploi', [EleveController::class, 'monEmploi'])->name('eleves.emploi');
-
-// Routes d'authentification
-Route::get('/register', [RegisteredUserController::class, 'create'])->middleware('guest')->name('register');
-Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
-
-    Route::middleware('can:manage-notes')->group(function () {
-        Route::get('/notes/{id}/edit', [NoteController::class, 'edit'])->name('notes.edit');
-        Route::put('/notes/{id}', [NoteController::class, 'update'])->name('notes.update');
-        Route::delete('/notes/{id}', [NoteController::class, 'destroy'])->name('notes.destroy');
-    });
-});
-
-
-Route::middleware(['auth'])->group(function () {
-    // Routes Admin
-    Route::resource('seance', SeanceController::class)->middleware('is_admin');
-    // Affichage emploi du temps pour élèves, parents et enseignants
-    Route::get('emploi', [SeanceController::class, 'index'])->name('emploi.index');
-    Route::get('emploi/{classe}', [SeanceController::class, 'show'])->name('emploi.show');
-    Route::get('/seances/create', [SeanceController::class, 'create'])->name('seances.create');
-    Route::get('/seances/show', [SeanceController::class, 'show'])->name('seances.show');
-    Route::get('/seances/edit', [SeanceController::class, 'edit'])->name('seances.edit');
-    Route::get('/seances/destroy', [SeanceController::class, 'destroy'])->name('seances.destroy');
-});
-require __DIR__.'/auth.php';
-
-
-
-
+Route::get('/emploi/edit', [SeanceController::class, 'edit'])->name('emploi.edit');
+Route::get('/emploi/destroy', [SeanceController::class, 'destroy'])->name('emploi.destroy');
+require __DIR__ . '/auth.php';
