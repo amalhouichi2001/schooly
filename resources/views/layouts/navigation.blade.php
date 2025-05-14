@@ -23,8 +23,9 @@
                         <a class="nav-link" href="{{ route('eleves.index') }}">Eleves</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('enseignants.index') }}">Enseignants</a>
+                        <a class="nav-link" href="{{ route('matieres.index') }}">Matieres</a>
                     </li>
+
                 @endauth
             </ul>
 

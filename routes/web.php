@@ -16,7 +16,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-
+use App\Http\Controllers\MatiereController;
 
 /*
 |----------------------------------------------------------------------
@@ -77,6 +77,24 @@ Route::middleware('auth')->group(function () {
         Route::get('enseignants/{id}/edit', [EnseignantController::class, 'edit'])->name('edit');
         Route::put('enseignants/{id}', [EnseignantController::class, 'update'])->name('update');
         Route::delete('enseignants/{id}', [EnseignantController::class, 'destroy'])->name('destroy');
+    });
+
+    // matieres routes
+    Route::prefix('matieres')->name('matieres.')->group(function () {
+        // Afficher la liste des matières
+        Route::get('/', [MatiereController::class, 'index'])->name('index');
+        // Afficher une matière et ses enseignants
+        Route::get('{matiere}', [MatiereController::class, 'show'])->name('show');
+        // Afficher le formulaire de création de matière
+        Route::get('/create', [MatiereController::class, 'create'])->name('create');
+        // Enregistrer une nouvelle matière
+        Route::post('/store', [MatiereController::class, 'store'])->name('store');
+        // Afficher le formulaire d'édition d'une matière
+        Route::get('{matiere}/edit', [MatiereController::class, 'edit'])->name('edit');
+        // Mettre à jour une matière
+        Route::put('{matiere}', [MatiereController::class, 'update'])->name('update');
+        // Supprimer une matière
+        Route::delete('{matiere}', [MatiereController::class, 'destroy'])->name('destroy');
     });
 
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
