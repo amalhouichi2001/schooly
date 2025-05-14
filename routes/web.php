@@ -69,6 +69,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [EleveController::class, 'destroy'])->name('destroy'); // Delete élève
         Route::get('/{id}', [EleveController::class, 'show'])->name('show'); // Optional: show details
     });
+    // enseignants routes
+    Route::prefix('enseignants')->name('enseignants.')->group(function () {
+        Route::get('enseignants', [EnseignantController::class, 'index'])->name('index');
+        Route::get('enseignants/create', [EnseignantController::class, 'create'])->name('create');
+        Route::post('enseignants', [EnseignantController::class, 'store'])->name('store');
+        Route::get('enseignants/{id}/edit', [EnseignantController::class, 'edit'])->name('edit');
+        Route::put('enseignants/{id}', [EnseignantController::class, 'update'])->name('update');
+        Route::delete('enseignants/{id}', [EnseignantController::class, 'destroy'])->name('destroy');
+    });
 
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
     Route::post('/monespace/update', [ProfileController::class, 'update'])->name('update.profile');
