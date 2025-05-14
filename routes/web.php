@@ -15,24 +15,14 @@ use App\Http\Controllers\ExerciceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Auth\RegisteredUserController;
-=======
 use App\Http\Controllers\Auth\RegisteredUserController;
 
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a
 
 /*
 |----------------------------------------------------------------------
 | Web Routes
 |----------------------------------------------------------------------
 */
-<<<<<<< HEAD
-Route::get('/absence', [AbsenceController::class, 'index'])->name('absence.index');
-Route::get('/classes/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'eleves'])->name('classes.eleves');
-=======
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a
 
 Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('parents.inscription.form');
 Route::post('/inscription', [InscriptionController::class, 'store'])->name('parents.inscription.store');
@@ -197,112 +187,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
 });
 
-<<<<<<< HEAD
-Route::get('/register', [RegisteredUserController::class, 'showRegistrationForm'])->name('register');
-
-// Traitement de l'inscription (POST)
-Route::post('/register', [RegisteredUserController::class, 'register']);
-// Routes dashboard
-Route::get('/dashboard', function () {
-    $user = Auth::user();
-
-    switch ($user->role) {
-        case 'admin':
-            return view('dashboards.admin');
-        case 'eleve':
-            return view('dashboards.eleve');
-        case 'enseignant':
-            return view('dashboards.enseignant');
-        case 'parent':
-            return view('dashboards.parent');
-        default:
-            abort(403, 'Accès non autorisé.');
-    }
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Routes avec contrôleurs de ressources
-Route::resource('eleves', EleveController::class);
-Route::resource('absences', AbsenceController::class);
-Route::resource('notes', NoteController::class);
-Route::resource('emploi', EmploiTempsController::class);
-Route::resource('classes', ClasseController::class);
-Route::resource('exercices', ExerciceController::class);
-Route::resource('enseignants', EnseignantController::class);
-Route::resource('parents', ParentUserController::class);
-
-Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
-
-
-
-
-Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
-
-Route::get('/enseignant/classe/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'getEleves']);
-// Marquer l'absence
-Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
-Route::post('absences/justification', [AbsenceController::class, 'ajouterJustification'])->name('absences.justification');
-
-
-
-
-
-Route::get('/absences/{id}', [AbsenceController::class, 'show'])->name('absences.show');
-Route::get('/exercices/{id}', [ExerciceController::class, 'show'])->name('exercices.show');
-
-
-// Justifier l'absence
-Route::post('/absences/justifier', [AbsenceController::class, 'justifier'])->name('absences.justifier');
-
-Route::get('/emplois', [EmploiTempsController::class, 'index'])->name('emploi.index');
-Route::get('/emplois/{id}', [EmploiTempsController::class, 'show'])->name('emploi.show');
-Route::get('/enseignant/classe/{classeId}/eleves', [AbsenceController::class, 'getElevesByClasse']);
-Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
-Route::post('/absences/justifier', [AbsenceController::class, 'storeAjax'])->name('absences.justifier');
-
-Route::get('enseignant/classe/{classe}/eleves', [AbsenceController::class, 'getElevesByClasse'])
-     ->name('enseignant.classe.eleves');
-Route::post('/absences/store-ajax', [AbsenceController::class, 'storeAjax'])->name('absences.storeAjax');
-
-Route::get('/enseignant/classes', [EnseignantController::class, 'classes'])->name('enseignant.classes');
-
-Route::get('/enseignant/exercice', [EnseignantController::class, 'exercice'])->name('enseignant.exercice');
-Route::get('/emploi', [EmploiTempsController::class, 'index'])->name('emploi.index');
-
-// Routes spécifiques aux parents
-Route::middleware(['auth'])->group(function () {
-    Route::get('/enseignant/absences', [EnseignantController::class, 'indexen'])->name('enseignant.absences');
-    Route::get('/enseignant/classe/{id}/eleves', [EnseignantController::class, 'getEleves']);
-    Route::post('/enseignant/absence', [EnseignantController::class, 'storeAbsence'])->name('enseignant.absence.store');
-});
-Route::get('/parent/inscription', [ParentUserController::class, 'formInscription'])->name('parent.inscription.form');
-
-Route::get('/parent/enfants', [ParentUserController::class, 'mesEnfants'])->name('parents.enfants');
-
-Route::post('/parents/inscription/{eleve_id}', [ParentUserController::class, 'storeinscriptions'])->name('parent.store.inscription');
-
-Route::post('/parent/{id}/inscription', [ParentUserController::class, 'submitInscription'])->name('parent.inscription.submit');
-
-Route::post('/parents/paiement/{id}', [ParentUserController::class, 'paiement'])->name('parents.paiement');
-Route::get('/parents/facture/{id}', [ParentUserController::class, 'genererFacturePDF'])->name('parents.facture.pdf');
-Route::get('parent/{id}/inscription', [ParentUserController::class, 'inscription']);
-Route::get('/parent/absences', [ParentUserController::class, 'absences'])->name('parents.absences');
-// Routes pour l'inscription d'un élève
-Route::post('/inscription/{eleve_id}/valider', [InscriptionController::class, 'valider'])->name('inscription.valider');
-Route::post('/paiement/{inscription_id}', [PaiementController::class, 'store'])->name('parents.paiement');
-
-
-// Routes élève
-Route::get('/eleves/emploi', [EmploiTempsController::class, 'index'])->name('eleves.emploi');
-Route::get('/eleve/exercices', [EleveController::class, 'exercices'])->name('eleves.exercices');
-Route::get('/eleve/exercices/{id}', [EleveController::class, 'showExercice'])->name('eleves.exercice.show');
-Route::get('/eleve/notes', [NoteController::class, 'mesNotes'])->name('eleves.notes')->middleware('auth');
-Route::get('/eleve/emploi', [EleveController::class, 'monEmploi'])->name('eleves.emploi');
-
-// Routes d'authentification
-Route::get('/register', [RegisteredUserController::class, 'create'])->middleware('guest')->name('register');
-Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('guest');
-
-require __DIR__.'/auth.php';
-=======
 require __DIR__ . '/auth.php';
->>>>>>> 5ab243abbcb71f308851672150b95dcf9467646a

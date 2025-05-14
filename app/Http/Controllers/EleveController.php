@@ -8,6 +8,7 @@ use App\Models\Exercice;
 use App\Models\Seance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -60,48 +61,48 @@ class EleveController extends Controller
         return view('eleves.create', compact('classes', 'parents'));
     }
 
-   public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'adresse' => 'nullable|string|max:255',
-        'date_naissance' => 'required|date',
-        'classe_id' => 'required|exists:classes,id',
-        'email' => 'required|email|unique:users,email',
-        'telephone' => 'required|string|max:20',
-        'gender' => 'required|in:male,female',
-        'password' => 'required|string|min:6',
-        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-        'parents' => 'nullable|array',
-        'parents.*' => 'exists:users,id',
-    ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'adresse' => 'nullable|string|max:255',
+            'date_naissance' => 'required|date',
+            'classe_id' => 'required|exists:classes,id',
+            'email' => 'required|email|unique:users,email',
+            'telephone' => 'required|string|max:20',
+            'gender' => 'required|in:male,female',
+            'password' => 'required|string|min:6',
+            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'parents' => 'nullable|array',
+            'parents.*' => 'exists:users,id',
+        ]);
 
-    $photoPath = null;
-    if ($request->hasFile('profile_photo_path')) {
-        $photoPath = $request->file('profile_photo_path')->store('images', 'public');
+        $photoPath = null;
+        if ($request->hasFile('profile_photo_path')) {
+            $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
+        }
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'prenom' => $validated['prenom'],
+            'adresse' => $validated['adresse'] ?? null,
+            'date_naissance' => $validated['date_naissance'],
+            'classe_id' => $validated['classe_id'],
+            'telephone' => $validated['telephone'],
+            'gender' => $validated['gender'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'role' => 'eleve',
+            'profile_photo_path' => $photoPath,
+        ]);
+
+        if (isset($validated['parents'])) {
+            $user->parents()->sync($validated['parents']);
+        }
+
+        return redirect()->route('eleves.index')->with('success', 'Élève ajouté avec succès.');
     }
-
-    $user = User::create([
-        'name' => $validated['name'],
-        'prenom' => $validated['prenom'],
-        'adresse' => $validated['adresse'] ?? null,
-        'date_naissance' => $validated['date_naissance'],
-        'classe_id' => $validated['classe_id'],
-        'telephone' => $validated['telephone'],
-        'gender' => $validated['gender'],
-        'email' => $validated['email'],
-        'password' => bcrypt($validated['password']),
-        'role' => 'eleve',
-         'profile_photo_path' => $photoPath,
-    ]);
-
-    if (isset($validated['parents'])) {
-        $user->parents()->sync($validated['parents']);
-    }
-
-    return redirect()->route('eleves.index')->with('success', 'Élève ajouté avec succès.');
-}
 
 
     public function show($id)
@@ -124,24 +125,31 @@ class EleveController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
+            'telephone' => 'required|string|max:20',
+            'email' => 'required|email|unique:users,email,' . $eleve->id,
             'adresse' => 'nullable|string|max:255',
-            'telephone' => 'nullable|string|max:20',
             'date_naissance' => 'required|date',
             'gender' => 'required|in:male,female',
             'classe_id' => 'required|exists:classes,id',
+            'password' => 'nullable|string|min:6',
             'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
     
-        // Upload new image and delete old if needed
         if ($request->hasFile('profile_photo_path')) {
-            // Delete old image if it exists
+            // Supprimer l'ancienne photo si elle existe
             if ($eleve->profile_photo_path && Storage::disk('public')->exists($eleve->profile_photo_path)) {
                 Storage::disk('public')->delete($eleve->profile_photo_path);
             }
     
-            // Store new image
             $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
             $validated['profile_photo_path'] = $photoPath;
+        }
+    
+        // Gérer le mot de passe
+        if ($validated['password'] ?? false) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']); // Ne pas modifier si vide
         }
     
         $eleve->update($validated);
@@ -149,7 +157,6 @@ class EleveController extends Controller
         return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
     }
     
-
 
 
     public function destroy($id)
