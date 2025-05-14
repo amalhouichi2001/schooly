@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->string('password');
             $table->foreignId('current_team_id')->nullable();
             $table->rememberToken();
-            $table->string('profile_photo', 2048)->nullable();
+            $table->string('profile_photo_path', 2048)->nullable();
 
             // Infos spécifiques
             $table->enum('role', ['admin', 'eleve', 'enseignant', 'parent']);
