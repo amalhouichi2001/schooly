@@ -2,15 +2,23 @@
 
 @section('content')
 <div class="container">
-    <h2>Liste des élèves par classe</h2>
+    <h2 class="mb-4">Liste des élèves & Absences</h2>
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    <label for="classe">Sélectionner une classe</label>
-    <select id="classe" class="form-control mb-3">
-        <option value="">-- Choisir une classe --</option>
-        @foreach($classes as $classe)
-            <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
-        @endforeach
-    </select>
+    <!-- Filtrer par classe -->
+    <div class="mb-4">
+        <label for="classeSelect">Filtrer par classe</label>
+        <select id="classeSelect" class="form-control" onchange="filterByClasse()">
+            <option value="">-- Toutes les classes --</option>
+            @foreach($classes as $classe)
+                <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
+            @endforeach
+        </select>
+    </div>
 
     <!-- Table: Élèves -->
     <h4>Liste des élèves</h4>
@@ -21,7 +29,9 @@
                 <th>Prénom</th>
                 <th>Adresse</th>
                 <th>Classe</th>
-                <th>Actions</th>
+                @if(Auth::user()->role === 'enseignant')
+                    <th>Actions</th>
+                @endif
             </tr>
         </thead>
         <tbody id="elevesTable">
@@ -31,13 +41,74 @@
                     <td>{{ $eleve->prenom }}</td>
                     <td>{{ $eleve->adresse }}</td>
                     <td>{{ $eleve->classe?->nom ?? 'Non attribuée' }}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="marquerAbsent({{ $eleve->id }})">Absent</button>
-                        <button class="btn btn-primary btn-sm" onclick="justifierAbsence({{ $eleve->id }})">Justification</button>
-                    </td>
+                    @if(Auth::user()->role === 'enseignant')
+                        <td>
+                            <form method="POST" action="{{ route('absences.marquer') }}" class="d-inline">
+                                @csrf
+                                <input type="hidden" name="eleve_id" value="{{ $eleve->id }}">
+
+                                <!-- Sélectionner une séance -->
+                                <select name="seance_id" class="form-control">
+                                    @foreach($seances as $seance)
+                                        <option value="{{ $seance->id }}" {{ old('seance_id') == $seance->id ? 'selected' : '' }}>
+                                            {{ $seance->nom }} ({{ $seance->date }} {{ $seance->heure_debut }})
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <button type="submit" class="btn btn-danger btn-sm mt-2">Marquer comme Absent</button>
+                            </form>
+                        </td>
+                    @endif
+                    @if(Auth::user()->role === 'admin')
+                        <td>
+                            <!-- Formulaire pour l'administrateur pour ajouter un motif -->
+                            <form method="POST" action="{{ route('absences.justification') }}" class="d-inline">
+                                @csrf
+                                <input type="hidden" name="eleve_id" value="{{ $eleve->id }}">
+                                <select name="absence_id" class="form-control">
+                                    @foreach($absences as $absence)
+                                        @if($absence->eleve_id == $eleve->id)
+                                            <option value="{{ $absence->id }}" {{ old('absence_id') == $absence->id ? 'selected' : '' }}>
+                                                Absence du {{ $absence->date }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+
+                                <input type="text" name="motif" class="form-control mt-2" placeholder="Motif de l'absence" required>
+                                <button type="submit" class="btn btn-success btn-sm mt-2">Ajouter la Justification</button>
+                            </form>
+                        </td>
+                    @endif
                 </tr>
             @empty
                 <tr><td colspan="5">Aucun élève trouvé.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- Table: Absences -->
+    <h4>Historique des absences</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Élève</th>
+                <th>Date</th>
+                <th>Justifiée</th>
+                <th>Motif</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($absences as $abs)
+                <tr>
+                    <td>{{ $abs->eleve->nom }} {{ $abs->eleve->prenom }}</td>
+                    <td>{{ $abs->date }}</td>
+                    <td>{{ $abs->justifie ? 'Oui' : 'Non' }}</td>
+                    <td>{{ $abs->motif ?? 'Non renseigné' }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4">Aucune absence enregistrée.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -46,31 +117,18 @@
 
 @section('scripts')
 <script>
-    function marquerAbsent(eleveId) {
-        alert("Élève ID " + eleveId + " marqué absent.");
-        // Tu peux ici faire un fetch POST vers une route Laravel pour enregistrer l'absence
-    }
+function filterByClasse() {
+    const selectedClasse = document.getElementById('classeSelect').value;
+    const rows = document.querySelectorAll('#elevesTable tr');
 
-    function justifierAbsence(eleveId) {
-        let motif = prompt("Motif de l'absence pour l'élève ID " + eleveId + " :");
-        if (motif) {
-            alert("Justification envoyée : " + motif);
-            // Tu peux ici faire un fetch POST vers une route Laravel avec le motif
+    rows.forEach(row => {
+        const rowClasseId = row.getAttribute('data-classe');
+        if (!selectedClasse || selectedClasse === rowClasseId) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
-    }
-
-    document.getElementById('classe').addEventListener('change', function () {
-        let selectedClasse = this.value;
-        let rows = document.querySelectorAll('#elevesTable tr');
-
-        rows.forEach(row => {
-            let rowClasse = row.getAttribute('data-classe');
-            if (!selectedClasse || selectedClasse === rowClasse) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
     });
+}
 </script>
 @endsection

@@ -14,6 +14,14 @@ class ClasseController extends Controller
         return view('classes.index', compact('classes'));
     }
 
+    public function eleves($id)
+{
+    $classe = Classe::findOrFail($id);
+    $eleves = $classe->eleves()->where('role', 'eleve')->get(); // assure-toi que la relation existe
+
+    return view('classes.eleves', compact('classe', 'eleves'));
+}
+
     // Affiche le formulaire de création
     public function create()
     {

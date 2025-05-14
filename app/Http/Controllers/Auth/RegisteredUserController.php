@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
-use App\Models\Eleve;
-use App\Models\Enseignant;
-use App\Models\ParentUser; 
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -28,53 +26,26 @@ class RegisteredUserController extends Controller
     /**
      * Gère la soumission du formulaire d'inscription.
      */
- // Renomme ce modèle si nécessaire
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:eleve,enseignant,parent,admin'],
+        ]);
 
-public function store(Request $request): RedirectResponse
-{
-    $request->validate([
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-        'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        'role' => ['required', 'in:eleve,enseignant,parent,admin'],
-    ]);
+        // Création de l'utilisateur avec rôle
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
 
-    // Création du user dans la table "users"
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => $request->role,
-    ]);
+        event(new Registered($user));
+        Auth::login($user);
 
-    // Insertion dans la table spécifique selon le rôle
-    switch ($request->role) {
-        case 'eleve':
-            Eleve::create([
-                'user_id' => $user->id,
-                // Ajoute d'autres champs si nécessaires
-            ]);
-            break;
-
-        case 'enseignant':
-            Enseignant::create([
-                'user_id' => $user->id,
-            ]);
-            break;
-
-        case 'parent':
-            ParentModel::create([
-                'user_id' => $user->id,
-            ]);
-            break;
-
-        // Pas besoin de faire quelque chose pour l’admin
+        return redirect(RouteServiceProvider::HOME);
     }
-
-    event(new Registered($user));
-    Auth::login($user);
-
-    return redirect(RouteServiceProvider::HOME);
-}
-
 }

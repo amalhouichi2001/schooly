@@ -32,4 +32,20 @@ class Seance extends Model
     {
         return $this->hasMany(Absence::class);
     }
+   
+    // Pour définir la date actuelle automatiquement si non précisée
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($seance) {
+            if (!$seance->date) {
+                $seance->date = now()->toDateString(); // Définit la date actuelle
+            }
+
+            if (!$seance->heure_debut) {
+                $seance->heure_debut = now()->format('H:i'); // Définit l'heure actuelle pour l'heure de début
+            }
+        });
+    }
 }

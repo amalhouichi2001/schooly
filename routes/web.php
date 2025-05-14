@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\CustomRegisterController;
+
 use App\Http\Controllers\EleveController;
 use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\AbsenceController;
@@ -14,13 +14,17 @@ use App\Http\Controllers\ExerciceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
-
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 /*
 |----------------------------------------------------------------------
 | Web Routes
 |----------------------------------------------------------------------
 */
+Route::get('/absence', [AbsenceController::class, 'index'])->name('absence.index');
+Route::get('/classes/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'eleves'])->name('classes.eleves');
+
 Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('parents.inscription.form');
 Route::post('/inscription', [InscriptionController::class, 'store'])->name('parents.inscription.store');
 Route::post('/parent/inscription', [ParentUserController::class, 'storeInscription'])->name('parents.inscription.store');
@@ -48,8 +52,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/register', [CustomRegisterController::class, 'create'])->name('register');
-Route::post('/register', [CustomRegisterController::class, 'store'])->name('register.store');
+
 
 
 Route::get('/monespace', function () {
@@ -115,7 +118,12 @@ Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show')
 Route::get('/enseignant/classe/{id}/eleves', [App\Http\Controllers\ClasseController::class, 'getEleves']);
 // Marquer l'absence
 Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
-Route::post('/absence', [AbsenceController::class, 'indexen'])->name('absence');
+Route::post('absences/justification', [AbsenceController::class, 'ajouterJustification'])->name('absences.justification');
+
+
+
+
+
 Route::get('/absences/{id}', [AbsenceController::class, 'show'])->name('absences.show');
 Route::get('/exercices/{id}', [ExerciceController::class, 'show'])->name('exercices.show');
 
@@ -157,7 +165,7 @@ Route::get('/parents/facture/{id}', [ParentUserController::class, 'genererFactur
 Route::get('parent/{id}/inscription', [ParentUserController::class, 'inscription']);
 Route::get('/parent/absences', [ParentUserController::class, 'absences'])->name('parents.absences');
 // Routes pour l'inscription d'un élève
-Route::post('/inscription/{eleve_id}/valider', [InscriptionsController::class, 'valider'])->name('inscription.valider');
+Route::post('/inscription/{eleve_id}/valider', [InscriptionController::class, 'valider'])->name('inscription.valider');
 Route::post('/paiement/{inscription_id}', [PaiementController::class, 'store'])->name('parents.paiement');
 
 
