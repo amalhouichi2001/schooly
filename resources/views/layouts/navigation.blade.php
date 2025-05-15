@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('salles.index') }}">Salles</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('classes.index') }}">Classes</a>
+                    </li>
                 @endauth
             </ul>
 
