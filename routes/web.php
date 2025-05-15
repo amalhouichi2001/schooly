@@ -17,13 +17,8 @@ use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\SeanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-<<<<<<< HEAD
-
-
-=======
 use App\Http\Controllers\MatiereController;
 use App\Http\Controllers\SalleController;
->>>>>>> c1aa0d88dfee6514ac872efcbae2e14884711fc5
 /*
 |----------------------------------------------------------------------
 | Web Routes
