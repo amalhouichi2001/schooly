@@ -105,6 +105,32 @@ Route::middleware('auth')->group(function () {
         Route::put('/{salle}', [SalleController::class, 'update'])->name('salles.update');
         Route::delete('/{salle}', [SalleController::class, 'destroy'])->name('salles.destroy');
     });
+
+    // classes routes
+    Route::prefix('classes')->group(function () {
+        Route::get('/', [ClasseController::class, 'index'])->name('classes.index');
+        Route::get('/create', [ClasseController::class, 'create'])->name('classes.create');
+        Route::post('/', [ClasseController::class, 'store'])->name('classes.store');
+        Route::get('/{classe}/edit', [ClasseController::class, 'edit'])->name('classes.edit');
+        Route::put('/{classe}', [ClasseController::class, 'update'])->name('classes.update');
+        Route::delete('/{classe}', [ClasseController::class, 'destroy'])->name('classes.destroy');
+    });
+
+    Route::prefix('classes')->name('classes.')->group(function () {
+        Route::get('/', [ClasseController::class, 'index'])->name('index');
+        Route::get('/create', [ClasseController::class, 'create'])->name('create');
+        Route::post('/', [ClasseController::class, 'store'])->name('store');
+        Route::get('/{classe}/edit', [ClasseController::class, 'edit'])->name('edit');
+        Route::put('/{classe}', [ClasseController::class, 'update'])->name('update');
+        Route::delete('/{classe}', [ClasseController::class, 'destroy'])->name('destroy');
+
+        // Nouvelle route pour afficher une classe et gérer ses élèves
+        Route::get('/{classe}', [ClasseController::class, 'show'])->name('show');
+
+        // Routes pour ajouter / retirer des élèves
+        Route::post('/{classe}/ajouter-eleve', [ClasseController::class, 'ajouterEleve'])->name('ajouterEleve');
+        Route::delete('/{classe}/retirer-eleve/{eleve}', [ClasseController::class, 'retirerEleve'])->name('retirerEleve');
+    });
     
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
     Route::post('/monespace/update', [ProfileController::class, 'update'])->name('update.profile');

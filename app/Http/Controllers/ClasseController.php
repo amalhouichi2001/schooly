@@ -7,83 +7,81 @@ use Illuminate\Http\Request;
 
 class ClasseController extends Controller
 {
-    // Affiche la liste des classes
     public function index()
     {
         $classes = Classe::all();
         return view('classes.index', compact('classes'));
     }
-
-    public function eleves($id)
-{
-    $classe = Classe::findOrFail($id);
-    $eleves = $classe->eleves()->where('role', 'eleve')->get(); // assure-toi que la relation existe
-
-    return view('classes.eleves', compact('classe', 'eleves'));
-}
-
-    // Affiche le formulaire de création
+    public function show(Classe $classe)
+    {
+        $elevesDansClasse = $classe->eleves;
+        $elevesSansClasse = \App\Models\User::where('role', 'eleve')
+                                ->whereNull('classe_id')->get();
+    
+        return view('classes.show', compact('classe', 'elevesDansClasse', 'elevesSansClasse'));
+    }
+    
     public function create()
     {
         return view('classes.create');
     }
-public function getEleves($id)
-{
-    $classe = Classe::with('eleves')->find($id);
-    
-    if (!$classe) {
-        return response()->json([]);
-    }
 
-    return response()->json($classe->eleves);
-}
-
-    // Enregistre une nouvelle classe
     public function store(Request $request)
     {
         $request->validate([
             'nom' => 'required|string|max:255',
-            
+            'niveau' => 'nullable|string|max:100',
         ]);
 
-        Classe::create($request->all());
+        Classe::create($request->only('nom', 'niveau'));
 
         return redirect()->route('classes.index')->with('success', 'Classe ajoutée avec succès.');
     }
 
-    // Affiche une classe spécifique
-    public function show(Classe $classe)
+    public function edit(Classe $classe)
     {
-        return view('classes.show', compact('classe'));
+        return view('classes.edit', compact('classe'));
     }
 
-
-    public function edit($id)
-{
-    $classe = Classe::findOrFail($id); // très important
-
-    return view('classes.edit', compact('classe'));
-}
-
-
-    // Met à jour une classe
     public function update(Request $request, Classe $classe)
     {
         $request->validate([
             'nom' => 'required|string|max:255',
-            
+            'niveau' => 'nullable|string|max:100',
         ]);
 
-        $classe->update($request->all());
+        $classe->update($request->only('nom', 'niveau'));
 
-        return redirect()->route('classes.index')->with('success', 'Classe mise à jour avec succès.');
+        return redirect()->route('classes.index')->with('success', 'Classe modifiée avec succès.');
     }
 
-    // Supprime une classe
     public function destroy(Classe $classe)
     {
         $classe->delete();
 
         return redirect()->route('classes.index')->with('success', 'Classe supprimée avec succès.');
     }
+    public function ajouterEleve(Request $request, Classe $classe)
+    {
+        $request->validate([
+            'eleve_id' => 'required|exists:users,id',
+        ]);
+
+        $eleve = \App\Models\User::findOrFail($request->eleve_id);
+        $eleve->classe_id = $classe->id;
+        $eleve->save();
+
+        return back()->with('success', 'Élève ajouté à la classe.');
+    }
+
+    public function retirerEleve(Classe $classe, \App\Models\User $eleve)
+    {
+        if ($eleve->classe_id == $classe->id) {
+            $eleve->classe_id = null;
+            $eleve->save();
+        }
+
+        return back()->with('success', 'Élève retiré de la classe.');
+    }
+    
 }
