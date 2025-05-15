@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Matiere extends Model
+class salles extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'nom',
-        'code',
+        'capacite'
     ];
 
     public function seances()
