@@ -17,8 +17,13 @@ use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\SeanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+<<<<<<< HEAD
 
 
+=======
+use App\Http\Controllers\MatiereController;
+use App\Http\Controllers\SalleController;
+>>>>>>> c1aa0d88dfee6514ac872efcbae2e14884711fc5
 /*
 |----------------------------------------------------------------------
 | Web Routes
@@ -97,7 +102,16 @@ Route::middleware('auth')->group(function () {
         // Supprimer une matière
         Route::delete('{matiere}', [MatiereController::class, 'destroy'])->name('destroy');
     });
-
+    // salles routes
+    Route::prefix('salles')->group(function () {
+        Route::get('/', [SalleController::class, 'index'])->name('salles.index');
+        Route::get('/create', [SalleController::class, 'create'])->name('salles.create');
+        Route::post('/', [SalleController::class, 'store'])->name('salles.store');
+        Route::get('/{salle}/edit', [SalleController::class, 'edit'])->name('salles.edit');
+        Route::put('/{salle}', [SalleController::class, 'update'])->name('salles.update');
+        Route::delete('/{salle}', [SalleController::class, 'destroy'])->name('salles.destroy');
+    });
+    
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
     Route::post('/monespace/update', [ProfileController::class, 'update'])->name('update.profile');
     Route::get('/monespace/password', [ProfileController::class, 'passwordForm'])->name('password.form');
