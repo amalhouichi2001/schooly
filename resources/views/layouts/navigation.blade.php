@@ -26,10 +26,13 @@
                         <a class="nav-link" href="{{ route('matieres.index') }}">Matieres</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('classes.index') }}">Classes</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('salles.index') }}">Salles</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('classes.index') }}">Classes</a>
+                        <a class="nav-link" href="{{ route('classes.index') }}">enseignants</a>
                     </li>
                 @endauth
             </ul>
