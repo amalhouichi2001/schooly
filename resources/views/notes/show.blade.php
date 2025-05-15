@@ -9,14 +9,15 @@
         <div class="card-header">
             Détails de la note
         </div>
-        <div class="card-body">
-            <h5 class="card-title">Nom de l'élève : {{ $note->eleve->nom }}</h5>
-            <p class="card-text"><strong>Matière :</strong> {{ $note->matiere }}</p>
-            <p class="card-text"><strong>Note :</strong> {{ $note->valeur }}</p>
-            <p class="card-text"><strong>Enseignant :</strong> {{ $note->enseignant->name }}</p>
-            <p class="card-text"><strong>Classe :</strong> {{ $note->classe->nom ?? 'Aucune classe' }}</p>
-            <p class="card-text"><strong>Date d'enregistrement :</strong> {{ $note->created_at }}</p>
-        </div>
+       
+    <div class="container">
+        <h2>Détail de la Note</h2>
+        <p><strong>Élève :</strong> {{ $note->eleve->name ?? 'Inconnu' }}</p>
+        <p><strong>Matière :</strong> {{ $note->matiere->nom ?? 'Inconnue' }}</p>
+        <p><strong>Valeur :</strong> {{ $note->note }}</p>
+        <p><strong>Classe :</strong> {{ $note->classe->nom ?? 'Non définie' }}</p>
+    </div>
+
         <div class="card-footer">
             <a href="{{ route('notes.index') }}" class="btn btn-secondary">Retour à la liste des notes</a>
         </div>

@@ -9,13 +9,8 @@ class Note extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'eleve_id',
-        'matiere_id',
-        'enseignant_id',
-        'classe_id',
-        'note',
-    ];
+     protected $fillable = ['eleve_id', 'enseignant_id', 'matiere_id', 'note', 'classe_id'];
+
 
     // Relations
     public function eleve()

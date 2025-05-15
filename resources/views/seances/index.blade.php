@@ -23,7 +23,9 @@
                 <th>Salle</th>
                 <th>Type</th>
                 <th>Classe</th> {{-- Ajout de la classe --}}
+                 @if(Auth::check() && Auth::user()->is_admin)
                 <th>Actions</th>
+                 @endif
             </tr>
         </thead>
         <tbody>

@@ -5,37 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use App\Models\User;
 use App\Models\Classe;
-use App\Models\matiere;
+use App\Models\Matiere;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+
 class NoteController extends Controller
 {
-public function index(Request $request)
-{
-    $classes = Classe::all();
-    $matieres = Matiere::all();
-
-    $classe_id = $request->input('classe_id');
-    $matiere = $request->input('matiere');
-
-    // Récupérer les élèves uniquement si une classe est sélectionnée
-    $eleves = collect(); // une collection vide par défaut
-
-    if ($classe_id && $matiere) {
+    public function index(Request $request)
+    {
+        $classe_id = $request->input('classe_id');
+        $matiere_id = $request->input('matiere_id');
+        $classes = Classe::All();
+        $matieres= Matiere::All();
+        // Récupérer les élèves de la classe (dans users avec role = eleve)
         $eleves = User::where('role', 'eleve')
-                      ->where('classe_id', $classe_id)
-                      ->get();
+            ->where('classe_id', $classe_id)
+            ->get();
+
+        // Récupérer les notes existantes pour cette classe et cette matière
+        // notes reliées à user_id et matière
+        $notesExistantes = Note::whereIn('eleve_id', $eleves->pluck('id'))
+            ->where('matiere_id', $matiere_id)
+            ->get()
+            ->keyBy('eleve_id');
+
+
+        return view('notes.index', compact('eleves', 'classe_id', 'matiere_id', 'notesExistantes', 'classes','matieres'));
     }
-
-    return view('notes.index', compact('classes', 'matieres', 'classe_id', 'matiere', 'eleves'));
-}
-
-
-
-
-
-    
 
     public function show($id)
     {
@@ -57,56 +53,46 @@ public function index(Request $request)
         return view('eleves.notes', compact('notes', 'moyenne'));
     }
 
-    
+    public function store(Request $request)
+    {
+        $request->validate([
+            'classe_id' => 'required|exists:classes,id',
+            'notes' => 'required|array',
+            'notes.*.eleve_id' => 'required|exists:users,id',
+            'notes.*.matiere_id' => 'required|exists:matieres,id',
+            'notes.*.valeur' => 'required|numeric|min:0|max:20',
+        ]);
 
-   public function store(Request $request)
-{
-    $request->validate([
-        'classe_id' => 'required|exists:classes,id',
-        'notes' => 'required|array',
-        'notes.*.eleve_id' => 'required|exists:users,id',
-        'notes.*.matiere' => 'required|string|max:255',
-        'notes.*.valeur' => 'required|numeric|min:0|max:20',
-    ]);
+        $enseignant = Auth::user();
 
-    $enseignant = Auth::user();
+        if (!$enseignant || $enseignant->role !== 'enseignant') {
+            return redirect()->back()->withErrors("Seul un enseignant peut enregistrer des notes.");
+        }
 
-    if (!$enseignant || $enseignant->role !== 'enseignant') {
-        return redirect()->back()->withErrors("Seul un enseignant peut enregistrer des notes.");
-    }
-
-    DB::beginTransaction();
-
-    try {
         foreach ($request->notes as $noteData) {
             Note::create([
                 'eleve_id' => $noteData['eleve_id'],
                 'enseignant_id' => $enseignant->id,
-                'matiere' => $noteData['matiere'], 
-                'valeur' => $noteData['valeur'],
+                'matiere_id' => $noteData['matiere_id'],
+                'note' => $noteData['note'],
                 'classe_id' => $request->classe_id,
             ]);
         }
 
-        DB::commit();
-        return redirect()->route('notes.index')->with('success', 'Notes enregistrées avec succès.');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->back()->withErrors('Erreur lors de l’enregistrement des notes : ' . $e->getMessage());
-    }
-}
-function create()
-{
-    $enseignant = Auth::user();
-
-    if (!$enseignant || $enseignant->role !== 'enseignant') {
-        return redirect()->back()->withErrors("Accès réservé aux enseignants.");
+        return redirect()->route('notes.show')->with('success', 'Notes enregistrées avec succès.');
     }
 
-    $classes = Classe::all();
-    $matieres = Matiere::all(); // Récupérer toutes les matières
+    public function create()
+    {
+        $enseignant = Auth::user();
 
-    return view('notes.create', compact('classes', 'matieres'));
-}
+        if (!$enseignant || $enseignant->role !== 'enseignant') {
+            return redirect()->back()->withErrors("Accès réservé aux enseignants.");
+        }
+
+        $classes = Classe::all();
+        $matieres = Matiere::all();
+
+        return view('notes.create', compact('classes', 'matieres'));
+    }
 }
