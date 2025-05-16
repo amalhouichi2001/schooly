@@ -31,4 +31,9 @@ public function answers()
 {
     return $this->hasMany(exercice_answers::class);
 }
+public function matiere()
+{
+    return $this->belongsTo(Matiere::class);
+}
+
 }

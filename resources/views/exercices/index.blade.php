@@ -3,10 +3,12 @@
 @section('content')
 <div class="container">
     <h2 class="mb-4">Liste des Exercices</h2>
+    
+@if(Auth::check() && Auth::user()->isEnseignant())
 
     {{-- Bouton pour créer un nouvel exercice --}}
     <a href="{{ route('exercices.create') }}" class="btn btn-primary mb-3">+ Ajouter un Exercice</a>
-
+@endif
     {{-- Affichage des messages de session --}}
     @if (session('success'))
         <div class="alert alert-success">

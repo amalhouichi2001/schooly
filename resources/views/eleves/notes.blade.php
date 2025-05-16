@@ -25,8 +25,8 @@
                         <p class="card-text">
                             <strong>Classe :</strong> {{ $note->classe->nom ?? 'N/A' }} <br>
                             <strong>Note :</strong> 
-                            <span class="fs-4 text-{{ $note->valeur >= 10 ? 'success' : 'danger' }}">
-                                {{ $note->valeur }}/20
+                            <span class="fs-4 text-{{ $note->note >= 10 ? 'success' : 'danger' }}">
+                                {{ $note->note }}/20
                             </span>
                         </p>
                     </div>

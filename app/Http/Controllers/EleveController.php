@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ExerciceAnswersImport;
+
+
+
 use App\Models\Classe;
 use App\Models\User;
 use App\Models\Exercice;
+use App\Models\Inscription;
 use App\Models\Seance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+
+
 use Illuminate\Support\Facades\Storage;
 
 
@@ -19,7 +27,16 @@ class EleveController extends Controller
         $eleves = User::where('role', 'eleve')->get();
         return view('eleves.index', compact('eleves'));
     }
+    public function ExerciceAnswersImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv'
+        ]);
 
+        // Excel::import(new ExerciceAnswersImport, $request->file('file'));
+
+        return back()->with('success', 'Réponses importées avec succès.');
+    }
     public function monEmploi()
     {
         $eleve = Auth::user();
@@ -28,25 +45,38 @@ class EleveController extends Controller
             return redirect()->back()->withErrors('Accès refusé ou en attente d’activation.');
         }
 
-        $emploiDuTemps = Seance::where('classe_id', $eleve->classe_id)
-            ->orderByRaw("FIELD(jour, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche')")
+        $seances = Seance::with('matiere')->get();
+        $emploiDuTemps = Seance::where('emploi_class_id', $eleve->classe_id)
+            ->orderByRaw("FIELD(date, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche')")
             ->orderBy('heure_debut')
             ->get();
+
 
         return view('eleves.emploi', compact('emploiDuTemps'));
     }
 
     public function exercices()
     {
-        $exercices = Exercice::all(); // Vous pouvez filtrer par classe ou matière ici
+        $exercices = Exercice::with('matiere')->get(); // chargement de la relation
         return view('eleves.exercices', compact('exercices'));
     }
 
     public function showExercice($id)
     {
-        $exercice = Exercice::findOrFail($id);
+        $exercice = Exercice::with('matiere')->findOrFail($id);
         return view('eleves.exercice_detail', compact('exercice'));
     }
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,csv'
+    ]);
+
+    Excel::import(new ExerciceAnswersImport, $request->file('file'));
+
+    return back()->with('success', 'Réponses importées avec succès.');
+}
+
 
     public function showInscriptionForm($id)
     {
@@ -97,11 +127,28 @@ class EleveController extends Controller
             'profile_photo_path' => $photoPath,
         ]);
 
-        if (isset($validated['parents'])) {
+        // 🔗 Lier le parent connecté s'il est authentifié
+        $authUser = Auth::user();
+        if ($authUser && $authUser->role === 'parent') {
+            $user->parents()->attach($authUser->id);
+        } elseif (isset($validated['parents'])) {
+            // Cas admin : assigner manuellement des parents
             $user->parents()->sync($validated['parents']);
         }
 
-        return redirect()->route('eleves.index')->with('success', 'Élève ajouté avec succès.');
+        // 🧾 Créer l’inscription non payée
+        Inscription::create([
+            'eleve_id' => $user->id,
+            'date_inscription' => now(),
+            'validee' => false,
+            'classe_id' => $validated['classe_id'],
+            'statut' => 'non payée',
+        ]);
+        if ($authUser && $authUser->role === 'parent') {
+              return redirect()->route('parents.inscriptions')->with('success', 'Élève ajouté avec succès.');
+        } else {
+            return redirect()->route('eleves.index')->with('success', 'Élève ajouté avec succès.');
+        }
     }
 
 
@@ -121,7 +168,7 @@ class EleveController extends Controller
     public function update(Request $request, $id)
     {
         $eleve = User::where('role', 'eleve')->findOrFail($id);
-    
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
@@ -134,29 +181,29 @@ class EleveController extends Controller
             'password' => 'nullable|string|min:6',
             'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
-    
+
         if ($request->hasFile('profile_photo_path')) {
             // Supprimer l'ancienne photo si elle existe
             if ($eleve->profile_photo_path && Storage::disk('public')->exists($eleve->profile_photo_path)) {
                 Storage::disk('public')->delete($eleve->profile_photo_path);
             }
-    
+
             $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
             $validated['profile_photo_path'] = $photoPath;
         }
-    
+
         // Gérer le mot de passe
         if ($validated['password'] ?? false) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']); // Ne pas modifier si vide
         }
-    
+
         $eleve->update($validated);
-    
+
         return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
     }
-    
+
 
 
     public function destroy($id)

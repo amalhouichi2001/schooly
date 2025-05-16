@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Matiere;
+use App\Models\Exercice;
 use Illuminate\Http\Request;
+use App\Models\Classe;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,8 +16,20 @@ class EnseignantController extends Controller
     public function index()
     {
         $enseignants = User::where('role', 'enseignant')->get();
-        return view('enseignants.index', compact('enseignants'));
+        $classes = Classe::with('eleves')->get();
+        return view('enseignants.index', compact('enseignants','classes'));
     }
+   
+
+public function classes()
+{
+    // Exemple : récupérer les classes liées à l'enseignant connecté
+    $enseignant = auth()->user();
+    // supposons que l’enseignant a une relation 'classes' (à définir dans le modèle User)
+    $classes = $enseignant->classes; 
+
+    return view('classes.index', compact('classes'));
+}
 
     public function create()
     {
@@ -56,6 +71,11 @@ class EnseignantController extends Controller
         $matieres = Matiere::all();
         return view('enseignants.edit', compact('enseignant', 'matieres'));
     }
+public function voirReponses($exercice_id)
+{
+    $exercice = Exercice::with('answers.eleve')->findOrFail($exercice_id);
+    return view('prof.reponses_exercice', compact('exercice'));
+}
 
     public function update(Request $request, $id)
     {

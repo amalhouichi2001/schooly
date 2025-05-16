@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ExerciceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
-use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\SeanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\MatiereController;
@@ -25,25 +24,10 @@ use App\Http\Controllers\SalleController;
 |----------------------------------------------------------------------
 */
 
-Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('parents.inscription.form');
-Route::post('/inscription', [InscriptionController::class, 'store'])->name('parents.inscription.store');
-Route::post('/parent/inscription', [ParentUserController::class, 'storeInscription'])->name('parents.inscription.store');
-Route::get('/inscription/create', [InscriptionController::class, 'create'])->name('inscription.create');
-Route::post('/inscription/store', [InscriptionController::class, 'store'])->name('inscription.store');
-Route::get('parents/inscription/form', [ParentUserController::class, 'formInscription'])->name('parents.inscription.form');
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('parent/inscription', [ParentUserController::class, 'formInscription'])->name('parents.inscription.form');
-    Route::post('parent/inscription', [ParentUserController::class, 'storeInscription'])->name('parents.inscription.store');
-});
 
-// Inscriptions
-Route::get('/inscription/{eleve}', [InscriptionController::class, 'show'])->name('inscription.show');
-Route::post('/inscription/valider/{eleve}', [InscriptionController::class, 'valider'])->name('inscription.valider');
-Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('inscription.index');
 
-// Paiements
-Route::post('/paiement/{inscription}', [PaiementController::class, 'store'])->name('parents.paiement');
+
 
 
 
@@ -122,9 +106,41 @@ Route::middleware('auth')->group(function () {
         // Routes pour ajouter / retirer des élèves
         Route::post('/{classe}/ajouter-eleve', [ClasseController::class, 'ajouterEleve'])->name('ajouterEleve');
         Route::delete('/{classe}/retirer-eleve/{eleve}', [ClasseController::class, 'retirerEleve'])->name('retirerEleve');
+        // bulletin routes 
+        Route::get('/{classe}/bulletin/{eleve}', [ClasseController::class, 'bulletin'])->name('bulletin');
+
+        Route::get('/classes/{classe}/bulletin/{eleve}/pdf', [ClasseController::class, 'exportBulletinPDF'])
+            ->name('classes.bulletin.pdf');
     });
-    
-    
+
+
+    // inscription & paimen
+
+    // 🔐 Routes pour les parents
+    Route::prefix('parents')->group(function () {
+
+        // Liste et formulaire
+        Route::get('/inscriptions', [InscriptionController::class, 'inscriptions'])->name('parents.inscriptions');
+
+        // Créer une inscription pour un élève
+        Route::post('/inscription/{eleve_id}', [InscriptionController::class, 'storeinscriptions'])->name('parents.inscription.store');
+
+
+        //paiement
+
+        Route::post('/parents/paiement/{id}', [InscriptionController::class, 'payer'])->name('parents.paiement');
+
+        Route::get('/facture/{id}', [InscriptionController::class, 'genererFacturePDF'])->name('parents.facture.pdf');
+    });
+
+    // 🧑‍💼 Routes pour l’admin
+    Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('admin.inscriptions.index');
+        Route::get('/inscriptions/{id}', [InscriptionController::class, 'show'])->name('admin.inscriptions.show');
+        Route::get('/eleves/create', [InscriptionController::class, 'create'])->name('admin.eleves.create');
+        Route::post('/eleves/store', [InscriptionController::class, 'store'])->name('admin.eleves.store');
+    });
+
     Route::get('/monespace/edit', [ProfileController::class, 'edit'])->name('edit.profile');
     Route::post('/monespace/update', [ProfileController::class, 'update'])->name('update.profile');
     Route::get('/monespace/password', [ProfileController::class, 'passwordForm'])->name('password.form');
@@ -168,7 +184,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('eleves', EleveController::class);
     Route::resource('absences', AbsenceController::class);
     Route::resource('notes', NoteController::class);
-  
+
     Route::resource('classes', ClasseController::class);
     Route::resource('exercices', ExerciceController::class);
     Route::resource('enseignants', EnseignantController::class);
@@ -192,7 +208,7 @@ Route::middleware('auth')->group(function () {
     // Justifier l'absence
     Route::post('/absences/justifier', [AbsenceController::class, 'justifier'])->name('absences.justifier');
 
-    
+
     Route::get('/enseignant/classe/{classeId}/eleves', [AbsenceController::class, 'getElevesByClasse']);
     Route::post('/absences/marquer', [AbsenceController::class, 'marquer'])->name('absences.marquer');
     Route::post('/absences/justifier', [AbsenceController::class, 'storeAjax'])->name('absences.justifier');
@@ -204,33 +220,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/enseignant/classes', [EnseignantController::class, 'classes'])->name('enseignant.classes');
 
     Route::get('/enseignant/exercice', [EnseignantController::class, 'exercice'])->name('enseignant.exercice');
-   
+
 
     // Routes spécifiques aux parents
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/enseignant/absences', [EnseignantController::class, 'indexen'])->name('enseignant.absences');
-        Route::get('/enseignant/classe/{id}/eleves', [EnseignantController::class, 'getEleves']);
-        Route::post('/enseignant/absence', [EnseignantController::class, 'storeAbsence'])->name('enseignant.absence.store');
-    });
-    Route::get('/parent/inscription', [ParentUserController::class, 'formInscription'])->name('parent.inscription.form');
+
+    Route::get('/enseignant/classe/{id}/eleves', [EnseignantController::class, 'getEleves']);
+    Route::post('/enseignant/absence', [EnseignantController::class, 'storeAbsence'])->name('enseignant.absence.store');
+
 
     Route::get('/parent/enfants', [ParentUserController::class, 'mesEnfants'])->name('parents.enfants');
+    Route::get('/enfants/{id}', [EleveController::class, 'show'])->name('enfants.show');
 
-    Route::post('/parents/inscription/{eleve_id}', [ParentUserController::class, 'storeinscriptions'])->name('parent.store.inscription');
-
-    Route::post('/parent/{id}/inscription', [ParentUserController::class, 'submitInscription'])->name('parent.inscription.submit');
-
-    Route::post('/parents/paiement/{id}', [ParentUserController::class, 'paiement'])->name('parents.paiement');
-    Route::get('/parents/facture/{id}', [ParentUserController::class, 'genererFacturePDF'])->name('parents.facture.pdf');
-    Route::get('parent/{id}/inscription', [ParentUserController::class, 'inscription']);
     Route::get('/parent/absences', [ParentUserController::class, 'absences'])->name('parents.absences');
-    // Routes pour l'inscription d'un élève
-    Route::post('/inscription/{eleve_id}/valider', [InscriptionController::class, 'valider'])->name('inscription.valider');
-    Route::post('/paiement/{inscription_id}', [PaiementController::class, 'store'])->name('parents.paiement');
+    Route::get('/absences', [AbsenceController::class, 'index'])->name('absences.index');
 
+    //exercice eleve
 
     // Routes élève
-   
+    Route::post('/eleve/exercices/{id}/import', [EleveController::class, 'import'])->name('eleves.exercices.import');
+
+
     Route::get('/eleve/exercices', [EleveController::class, 'exercices'])->name('eleves.exercices');
     Route::get('/eleve/exercices/{id}', [EleveController::class, 'showExercice'])->name('eleves.exercice.show');
     Route::get('/eleve/notes', [NoteController::class, 'mesNotes'])->name('eleves.notes')->middleware('auth');
@@ -247,4 +256,15 @@ Route::get('/emploi/show/{id}', [SeanceController::class, 'show'])->name('seance
 
 Route::get('/emploi/edit', [SeanceController::class, 'edit'])->name('emploi.edit');
 Route::get('/emploi/destroy', [SeanceController::class, 'destroy'])->name('emploi.destroy');
+
+Route::post('/eleves/exercices/{id}/upload', [ExerciceController::class, 'uploadReponse'])->name('eleves.exercice.upload');
+Route::post('/eleve/exercices/{id}/import', [EleveController::class, 'import'])->name('eleves.exercices.import');
+Route::get('/exercices/{id}/soumettre', [ExerciceController::class, 'formSoumission'])
+    ->middleware(['auth'])
+    ->name('exercices.soumettre');
+
+// Soumettre le fichier
+Route::post('/exercices/{id}/soumettre', [ExerciceController::class, 'uploadReponse'])
+    ->middleware(['auth'])
+    ->name('exercices.repondre');
 require __DIR__ . '/auth.php';

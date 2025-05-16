@@ -6,17 +6,69 @@ use App\Models\Exercice;
 use App\Models\Classe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ExerciceAnswer;
+use Illuminate\Support\Carbon;
+
 class ExerciceController extends Controller
 {
- public function index()
+public function index()
 {
-    $enseignantId = auth()->id(); // ou auth()->user()->id
+    $user = Auth::user(); // Utilisateur connecté
+    $exercices = collect(); // Valeur par défaut vide
 
-    $exercices = Exercice::where('enseignant_id', $enseignantId)->get();
+    if ($user->isEleve()) {
+        // Si l'élève a une classe, on récupère les exercices liés à sa classe
+        if ($user->classe_id) {
+            $exercices = Exercice::where('classe_id', $user->classe_id)
+                ->with(['matiere', 'enseignant']) // si des relations existent
+                ->latest()
+                ->get();
+        }
+    } elseif ($user->isAdmin()) {
+        // L'administrateur voit tous les exercices
+        $exercices = Exercice::with(['matiere', 'enseignant']) // relations si nécessaires
+            ->latest()
+            ->get();
+    } elseif ($user->isEnseignant()) {
+        // L'enseignant voit uniquement ses propres exercices
+        $exercices = Exercice::where('enseignant_id', $user->id)
+            ->with(['matiere', 'classe']) // relations si nécessaires
+            ->latest()
+            ->get();
+    }
 
     return view('exercices.index', compact('exercices'));
 }
 
+public function uploadReponse(Request $request, $id)
+{
+    $request->validate([
+        'reponse' => 'required|file|max:10240', // max 10MB
+    ]);
+
+    $exercice = Exercice::findOrFail($id);
+
+    $filename = time() . '_' . $request->file('reponse')->getClientOriginalName();
+    $path = $request->file('reponse')->storeAs('reponses', $filename, 'public');
+
+    // Vérifie si l'élève a déjà soumis une réponse
+    $exist = ExerciceAnswer::where('exercice_id', $id)
+        ->where('eleve_id', Auth::id())
+        ->first();
+
+    if ($exist) {
+        return back()->withErrors('Vous avez déjà soumis une réponse pour cet exercice.');
+    }
+
+    ExerciceAnswer::create([
+        'exercice_id' => $id,
+        'eleve_id' => Auth::id(),
+        'reponse' => $path,
+        'submitted_at' => Carbon::now(),
+    ]);
+
+    return back()->with('success', 'Réponse envoyée avec succès !');
+}
 
     
 public function create()

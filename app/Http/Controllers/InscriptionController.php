@@ -4,86 +4,64 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Inscription;
-use App\Models\Eleve;
-use App\Models\Paiement;
 use App\Models\Classe;
-use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InscriptionController extends Controller
-{public function storeInscription(Request $request)
 {
-    $request->validate([
-        'eleve_id' => 'required|exists:eleves,id',
-        'date_inscription' => 'required|date',
-    ]);
 
-    Inscription::create([
-        'eleve_id' => $request->eleve_id,
-        'date_inscription' => $request->date_inscription,
-        'validee' => false,
-    ]);
 
-    return redirect('/parent/inscription')->with('success', 'Élève inscrit avec succès.');
-
-}
-
-    public function show($eleve_id)
+    // Affiche une inscription spécifique liée à l’utilisateur connecté
+    public function inscriptions()
     {
-        $eleve = Eleve::findOrFail($eleve_id);
-        $inscriptions = Inscription::where('eleve_id', $eleve_id)->first();
+        $user = Auth::user();
 
-        return view('inscriptions.show', compact('eleve', 'inscription'));
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Récupérer tous les enfants du parent connecté
+        $eleves = $user->enfants;
+
+        // Récupérer les inscriptions de tous ses enfants
+        $inscriptions = Inscription::whereIn('eleve_id', $eleves->pluck('id'))->with('eleve')->get();
+
+        return view('parents.inscriptions', compact('inscriptions'));
     }
 
-    // Valider une inscription
-    public function valider(Request $request, $eleve_id)
+    // Crée une nouvelle inscription
+   
+
+    
+    // Traitement du paiement
+    public function payer(Request $request, $id)
     {
-        $eleve = Eleve::findOrFail($eleve_id);
+        $inscription = Inscription::findOrFail($id);
+        $inscription->statut = 'payee';
+        
+        $inscription->save();
 
-        $inscription = Inscription::create([
-            'eleve_id' => $eleve->id,
-            'parent_id' => Auth::id(),
-            'date' => now(),
-            'status' => 'validee'
-        ]);
-
-        return redirect()->route('inscription.show', $eleve_id)
-                         ->with('success', 'Inscription validée. Veuillez procéder au paiement.');
+        return redirect()->route('parents.inscriptions')->with('success', 'Paiement effectué avec succès.');
     }
 
-    public function create()
-{
-    $classes = Classe::all(); // Assure-toi d’avoir importé Classe
-    return view('inscriptions.create', compact('classes'));
-}
+    // Générer facture PDF
+    public function genererFacturePDF($id)
+    {
+        $inscription = Inscription::findOrFail($id);
+        $pdf = Pdf::loadView('parents.facture', compact('inscription'));
+        return $pdf->download('facture_paiement_' . $inscription->id . '.pdf');
+    }
 
-
-    public function store(Request $request)
-{
-    $request->validate([
-        'nom' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'date_naissance' => 'required|date',
-        'adresse' => 'required|string',
-        'classe_id' => 'required|exists:classes,id',
-        'user_id' => 'required|exists:users,id',
-    ]);
-
-    Eleve::create($request->all());
-
-    return redirect('/parent/inscription')->with('success', 'Élève inscrit avec succès.');
-
-}
+    // Affiche la liste de toutes les inscriptions
     public function index()
     {
-        $inscriptions = Inscription::with(['eleve', 'paiement'])->get();
+        $inscriptions = Inscription::with(['eleve'])->get();
         return view('inscriptions.index', compact('inscriptions'));
     }
-    public function formInscription()
-{
-    $inscriptions = Inscription::with(['eleve', 'paiement'])->get();
 
-    return view('parent.inscription', compact('inscriptions'));
-}
+   
+
+  
 }

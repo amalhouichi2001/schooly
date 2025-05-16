@@ -38,7 +38,7 @@
                     <i class="bi bi-cash-coin fs-1 text-primary"></i>
                     <h5 class="card-title mt-3">Inscriptions & Paiement</h5>
                     <p class="card-text">Inscrire vos enfants et régler les frais d’inscription.</p>
-                    <a href="{{ route('parent.inscription.form') }}" class="btn btn-outline-primary">Accéder</a>
+                    <a href="{{ route('parents.inscriptions') }}" class="btn btn-outline-primary">Accéder</a>
 
 
 

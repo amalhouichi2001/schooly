@@ -18,7 +18,7 @@
             <tbody>
                 @foreach ($absences as $absence)
                     <tr>
-                        <td>{{ $absence->eleve->nom ?? 'Inconnu' }}</td>
+                        <td>{{ $absence->eleve->name }}</td>
                         <td>{{ $absence->date }}</td>
                         <td>{{ $absence->motif }}</td>
                     </tr>

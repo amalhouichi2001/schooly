@@ -15,7 +15,7 @@
                     <tr>
                         <th>#</th>
                         <th>Titre</th>
-                        <th>Matière</th>
+                        
                         <th>Date limite</th>
                         <th>Action</th>
                     </tr>
@@ -25,7 +25,7 @@
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $exercice->titre }}</td>
-                            <td>{{ $exercice->matiere }}</td>
+                            
                             <td class="text-center">{{ \Carbon\Carbon::parse($exercice->date_limite)->format('d/m/Y') }}</td>
 
                             <td class="text-center">

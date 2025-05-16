@@ -14,7 +14,7 @@
                     <i class="bi bi-people-fill fs-1 text-info"></i>
                     <h5 class="card-title mt-3">Mes Classes</h5>
                     <p class="card-text">Consulter les classes que vous enseignez.</p>
-                    <a href="{{ route('enseignant.classes') }}" class="btn btn-outline-info">Voir</a>
+                    <a href="{{ route('classes.index') }}" class="btn btn-outline-info">Voir</a>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
                     <i class="bi bi-calendar-x-fill fs-1 text-danger"></i>
                     <h5 class="card-title mt-3">Absences</h5>
                     <p class="card-text">Suivre et gérer les absences des élèves.</p>
-                    <a href="{{ route('absence') }}" class="btn btn-outline-danger">Gérer</a>
+                    <a href="{{ route('absences.index') }}" class="btn btn-outline-danger">Gérer</a>
                 </div>
             </div>
         </div>

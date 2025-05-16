@@ -1,38 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>Facture</title>
+    <title>Facture Paiement</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 8px;
+        }
     </style>
 </head>
+
 <body>
-
     <h2>Facture de Paiement</h2>
-    <p><strong>Nom du parent :</strong> {{ $inscription->eleve->parent->nom }}</p>
-    <p><strong>Enfant :</strong> {{ $inscription->eleve->nom }}</p>
-    <p><strong>Date d'inscription :</strong> {{ $inscription->date_inscription->format('d/m/Y') }}</p>
-    <p><strong>Mode de paiement :</strong> {{ ucfirst($inscription->mode_paiement) }}</p>
+    <p>Nom de l'élève : {{ $inscription->eleve?->name ?? 'Inconnu' }}</p>
+    <p>Date d'inscription : {{ $inscription->date_inscription }}</p>
+    <p>Statut : {{ $inscription->statut }}</p>
+    <p>Montant payé : 100.00 TND</p>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Libellé</th>
-                <th>Montant</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Frais d'inscription</td>
-                <td>100 TND</td> {{-- adapte selon ton système --}}
-            </tr>
-        </tbody>
-    </table>
-
-    <p style="margin-top: 30px;">Merci pour votre paiement.</p>
-
+    <p>Date de génération : {{ now()->format('d/m/Y') }}</p>
 </body>
+
 </html>

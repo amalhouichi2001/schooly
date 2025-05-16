@@ -74,12 +74,13 @@ class NoteController extends Controller
                 'eleve_id' => $noteData['eleve_id'],
                 'enseignant_id' => $enseignant->id,
                 'matiere_id' => $noteData['matiere_id'],
-                'note' => $noteData['note'],
+                'note' => $noteData['valeur'],
                 'classe_id' => $request->classe_id,
             ]);
         }
 
-        return redirect()->route('notes.show')->with('success', 'Notes enregistrées avec succès.');
+        return redirect()->route('notes.index')->with('success', 'Notes enregistrées avec succès.');
+
     }
 
     public function create()

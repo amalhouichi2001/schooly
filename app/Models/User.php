@@ -74,20 +74,7 @@ class User extends Authenticatable
 
     // ========== Helpers pour vérifier le rôle ==========
 
-    public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isEnseignant()
-{
-    return $this->role === 'enseignant';
-}
-
-    public function isEleve()
-    {
-        return $this->role === 'eleve';
-    }
+    
 
     public function isParent()
     {
@@ -157,8 +144,28 @@ class User extends Authenticatable
         return $this->hasMany(Absence::class, 'enseignant_id');
     }
 
+
     public function absencesEleve()
     {
         return $this->hasMany(Absence::class, 'eleve_id');
     }
+    public function elevesSansClasse()
+    {
+        return User::whereNull('classe_id')->get();
+    }
+    public function isAdmin()
+{
+    return $this->role === 'admin';
+}
+
+public function isEleve()
+{
+    return $this->role === 'eleve';
+}
+
+public function isEnseignant()
+{
+    return $this->role === 'enseignant';
+}
+
 }

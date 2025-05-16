@@ -1,32 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
-    <div class="card shadow border-0">
-        <div class="card-header bg-success text-white">
-            <h4>Détail de l'exercice</h4>
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Détails de l'exercice</h4>
         </div>
         <div class="card-body">
-            <h5 class="card-title text-primary">{{ $exercice->titre }}</h5>
-            <p><strong>Matière :</strong> {{ $exercice->matiere }}</p>
-            <p><strong>Date limite :</strong> {{ \Carbon\Carbon::parse($exercice->date_limite)->format('d/m/Y') }}</p>
+            <h5 class="card-title">{{ $exercice->titre }}</h5>
 
-            <p><strong>Description :</strong></p>
-            <div class="alert alert-light">
-                {!! nl2br(e($exercice->description)) !!}
-            </div>
+            <p><strong>Description :</strong> {{ $exercice->description }}</p>
 
-            @if($exercice->fichier)
-                <p><strong>Fichier :</strong> 
-                    <a href="{{ asset('storage/exercices/' . $exercice->fichier) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                        📥 Télécharger
-                    </a>
-                </p>
-            @endif
-
-            <a href="{{ route('eleves.exercices') }}" class="btn btn-secondary mt-3">
-                ⬅ Retour à la liste
+            <a href="{{ asset('storage/' . $exercice->fichier) }}" class="btn btn-outline-primary mb-3" download>
+                📥 Télécharger l'exercice
             </a>
+
+            <hr>
+
+            <form action="{{ route('eleves.exercices.import', $exercice->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label for="file">Importer les réponses :</label>
+                <input type="file" name="file" required>
+                <button type="submit">ajouter</button>
+            </form>
         </div>
     </div>
 </div>

@@ -20,10 +20,10 @@
                 <tbody>
                     @foreach($emploiDuTemps as $cours)
                     <tr>
-                        <td>{{ $cours->jour }}</td>
+                        <td>{{ $cours->date }}</td>
                         <td>{{ $cours->heure_debut }}</td>
                         <td>{{ $cours->heure_fin }}</td>
-                        <td>{{ $cours->matiere }}</td>
+                        <td>{{ $cours->matiere->nom }}</td>
                     </tr>
                     @endforeach
                 </tbody>

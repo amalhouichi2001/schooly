@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('eleve_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('classe_id')->constrained()->onDelete('cascade');
             $table->date('date_inscription')->default(now());
+            $table->enum('statut', ['payee', 'non payee'])->default('non payee');
             $table->timestamps();
         });
     }

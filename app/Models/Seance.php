@@ -25,7 +25,7 @@ class Seance extends Model
 
     public function salle()
     {
-        return $this->belongsTo(Salle::class);
+        return $this->belongsTo(salles::class);
     }
 
     public function classe()
