@@ -17,7 +17,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nom</th>
-                <th>Nombre d'élèves</th> <!-- Remplacé "Niveau" par nombre d'élèves -->
+                <th>Nombre d'élèves</th> 
                 <th>Actions</th>
             </tr>
         </thead>

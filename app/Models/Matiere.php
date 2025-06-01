@@ -9,7 +9,7 @@ class Matiere extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['nom'];
 
     public function notes()
     {

@@ -2,14 +2,14 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\salles;
+use App\Models\salle;
 use Illuminate\Http\Request;
 
 class SalleController extends Controller
 {
     public function index()
     {
-        $salles = salles::all();
+        $salles = salle::all();
         return view('salles.index', compact('salles'));
     }
 
@@ -25,17 +25,17 @@ class SalleController extends Controller
             'capacite' => 'nullable|integer',
         ]);
 
-        salles::create($request->all());
+        salle::create($request->all());
 
         return redirect()->route('salles.index')->with('success', 'Salle ajoutée avec succès.');
     }
 
-    public function edit(salles$salle)
+    public function edit(salle$salle)
     {
         return view('salles.edit', compact('salle'));
     }
 
-    public function update(Request $request, salles $salle)
+    public function update(Request $request, salle $salle)
     {
         $request->validate([
             'nom' => 'required|string|max:255',

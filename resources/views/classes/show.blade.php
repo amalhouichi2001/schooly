@@ -13,10 +13,12 @@
     <div class="mb-4">
         <p><strong>ID :</strong> {{ $classe->id }}</p>
         <p><strong>Nom :</strong> {{ $classe->nom }}</p>
+        
+@if(Auth::user()->isAdmin())
         <a href="{{ route('classes.edit', $classe) }}" class="btn btn-outline-primary">
             <i class="bi bi-pencil-square"></i> Modifier la classe
         </a>
-
+@endif
     </div>
 
     <hr>
@@ -34,10 +36,13 @@
                 <div class="text-muted small">Aucune note</div>
                 @endif
             </div>
+            
             <div class="d-flex gap-2">
                 <a href="{{ route('classes.bulletin', [$classe->id, $eleve->id]) }}" class="btn btn-sm btn-success">
                     <i class="bi bi-journal-text"></i>
                 </a>
+                
+@if(Auth::user()->isAdmin())
                 <form method="POST" action="{{ route('classes.retirerEleve', [$classe, $eleve]) }}">
                     @csrf
                     @method('DELETE')
@@ -45,6 +50,7 @@
                         <i class="bi bi-x-circle"></i> Retirer
                     </button>
                 </form>
+         @endif
             </div>
         </li>
         @empty
@@ -52,8 +58,9 @@
         @endforelse
     </ul>
 
-
+@if(Auth::user()->isAdmin())
     {{-- Ajouter un élève à cette classe --}}
+    
     <h4><i class="bi bi-person-plus-fill"></i> Ajouter un élève sans classe</h4>
     @if ($elevesSansClasse->count())
     <form method="POST" action="{{ route('classes.ajouterEleve', $classe) }}">
@@ -75,4 +82,5 @@
     @endif
 
 </div>
+@endif
 @endsection

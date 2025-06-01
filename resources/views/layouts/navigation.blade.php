@@ -30,12 +30,14 @@ $unreadCount = auth()->check() ? Message::where('receiver_id', auth()->id())->wh
                 <li class="nav-item"><a class="nav-link" href="{{ route('exercices.index') }}">Exercices</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('emploi.index') }}">Emplois</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('parents.inscriptions') }}">Inscription</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('parents.index') }}">parents</a></li>
                 @endif
 
                 {{-- PARENT --}}
                 @if(Auth::user()->isParent())
                 <li class="nav-item"><a class="nav-link" href="{{ route('parents.enfants') }}">Mes enfants</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('parents.inscriptions') }}">Inscription</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('emploi.index') }}">Mon emploi</a></li>
                 @endif
 
                 {{-- ÉLÈVE --}}
@@ -50,6 +52,8 @@ $unreadCount = auth()->check() ? Message::where('receiver_id', auth()->id())->wh
                 
                 <li class="nav-item"><a class="nav-link" href="{{ route('exercices.index') }}">Mes exercices</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('emploi.index') }}">Mon emploi</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('classes.index') }}">Classes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('emploi.index') }}">Emplois</a></li>
                 @endif
                 @endauth
             </ul>

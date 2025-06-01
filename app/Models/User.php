@@ -126,19 +126,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Matiere::class);
     }
-    // Parents de l'élève
-    public function parents()
-    {
-        return $this->belongsToMany(User::class, 'parent_eleve', 'eleve_id', 'parent_id')
-            ->where('role', 'parent');
-    }
+    
 
-    // Enfants d'un parent
-    public function enfants()
-    {
-        return $this->belongsToMany(User::class, 'parent_eleve', 'parent_id', 'eleve_id')
-            ->where('role', 'eleve');
-    }
+  
     public function absencesEnseignant()
     {
         return $this->hasMany(Absence::class, 'enseignant_id');
@@ -167,5 +157,18 @@ public function isEnseignant()
 {
     return $this->role === 'enseignant';
 }
+
+
+
+public function enfants()
+{
+    return $this->belongsToMany(User::class, 'eleve_parent', 'parent_id', 'eleve_id');
+}
+
+public function parents()
+{
+    return $this->belongsToMany(User::class, 'eleve_parent', 'eleve_id', 'parent_id');
+}
+
 
 }

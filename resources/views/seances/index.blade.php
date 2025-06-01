@@ -1,88 +1,142 @@
 @extends('layouts.app')
 
+@section('title', 'Emploi du temps')
+
 @section('content')
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Liste des séances</h2>
+<div class="container py-4">
+    <h2 class="text-center text-primary mb-4">📅 Créer un Emploi du Temps</h2>
 
-        @if(Auth::check() && Auth::user()->is_admin)
-        <a href="{{ route('seances.create') }}" class="btn btn-primary">Ajouter une séance</a>
-        @endif
-    </div>
-    @if(session('success') || true)
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        @if(session('success'))
-        <div class="alert alert-success mb-0 me-3 py-2 px-3">
-            {{ session('success') }}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $message)
+                    <li>{{ $message }}</li>
+                @endforeach
+            </ul>
         </div>
-        @endif
-
-        <div class="d-flex align-items-center">
-            <label for="typeFilter" class="me-2 mb-0 fw-bold">Filtrer par type :</label>
-            <select id="typeFilter" class="form-select form-select-sm w-auto" onchange="filterSeances()">
-                <option value="">Tous</option>
-                <option value="cours">Cours</option>
-                <option value="examen">Examen</option>
-            </select>
-        </div>
-    </div>
     @endif
 
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Heure</th>
-                <th>Matière</th>
-                <th>Salle</th>
-                <th>Type</th>
-                <th>Classe</th>
-                <th>Enseignant</th> {{-- ✅ Nouvelle colonne --}}
-                @if(Auth::check() && Auth::user()->is_admin)
-                <th>Actions</th>
-                @endif
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($seances as $seance)
-            <tr class="seance-row" data-type="{{ $seance->type }}">
-                <td>{{ $seance->date }}</td>
-                <td>{{ $seance->heure_debut }} - {{ $seance->heure_fin }}</td>
-                <td>{{ $seance->matiere->nom ?? '' }}</td>
-                <td>{{ $seance->salle->nom ?? '' }}</td>
-                <td>{{ ucfirst($seance->type) }}</td>
-                <td>{{ $seance->classe->nom ?? '' }}</td>
-                <td>{{ $seance->enseignant->name ?? 'N/A' }}</td> {{-- ✅ Affichage de l'enseignant --}}
-                @if(Auth::check() && Auth::user()->is_admin)
-                <td>
-                    <a href="{{ route('seances.edit', $seance->id) }}" class="btn btn-warning btn-sm">Modifier</a>
-                    <form action="{{ route('seances.destroy', $seance->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Confirmer la suppression ?')">Supprimer</button>
-                    </form>
-                </td>
-                @endif
-            </tr>
-            @endforeach
-        </tbody>
+    @if($user->isAdmin())
+        <form action="{{ route('seances.store') }}" method="POST">
+            @csrf
 
-    </table>
+            <div class="mb-3">
+                <label for="classe_id" class="form-label fw-bold">Choisir la classe :</label>
+                <select name="classe_id" id="classe_id" class="form-select" required>
+                    <option value="" disabled selected>-- Sélectionnez une classe --</option>
+                    @foreach($classes as $classe)
+                        <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            @php
+                $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+                $heures = ['08:00-10:00', '10:00-12:00', '13:00-15:00', '15:00-17:00'];
+            @endphp
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Jour / Heure</th>
+                            @foreach($heures as $heure)
+                                <th>{{ $heure }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($jours as $jour)
+                        <tr>
+                            <th class="table-secondary">{{ $jour }}</th>
+                            @foreach($heures as $heure)
+                            <td>
+                                <select name="emploi[{{ $jour }}][{{ $heure }}][matiere_id]" class="form-select form-select-sm mb-1">
+                                    <option value="">-- Matière --</option>
+                                    @foreach($matieres as $matiere)
+                                        <option value="{{ $matiere->id }}">{{ $matiere->nom }}</option>
+                                    @endforeach
+                                </select>
+
+                                <select name="emploi[{{ $jour }}][{{ $heure }}][enseignant_id]" class="form-select form-select-sm mb-1">
+                                    <option value="">-- Enseignant --</option>
+                                    @foreach($enseignants as $enseignant)
+                                        <option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                <select name="emploi[{{ $jour }}][{{ $heure }}][salle_id]" class="form-select form-select-sm">
+                                    <option value="">-- Salle --</option>
+                                    @foreach($salles as $salle)
+                                        <option value="{{ $salle->id }}">{{ $salle->nom }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            @endforeach
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-success">✅ Enregistrer l'emploi du temps</button>
+            </div>
+        </form>
+    @else
+        <div class="alert alert-info text-center">
+            Vous n'avez pas les droits pour modifier l'emploi du temps. Vous pouvez uniquement le consulter.
+        </div>
+    @endif
+
+    <hr class="my-4">
+
+    <h3 class="mb-3">📅 Emploi du temps enregistré</h3>
+
+    @php
+        // Organisation des séances par jour et plage horaire
+        $emploiTemps = [];
+        foreach ($seances as $seance) {
+            $jourFr = ucfirst(Carbon\Carbon::parse($seance->date)->locale('fr')->dayName);
+            $plage = $seance->heure_debut . '-' . $seance->heure_fin;
+            $emploiTemps[$jourFr][$plage] = $seance;
+        }
+    @endphp
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Jour / Heure</th>
+                    @foreach($heures as $heure)
+                        <th>{{ $heure }}</th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($jours as $jour)
+                <tr>
+                    <th class="table-secondary">{{ $jour }}</th>
+                    @foreach($heures as $heure)
+                        <td>
+                            @if(isset($emploiTemps[$jour][$heure]))
+                                @php $seance = $emploiTemps[$jour][$heure]; @endphp
+                                <strong>{{ $seance->matiere->nom ?? 'N/A' }}</strong><br>
+                                <small>Prof: {{ $seance->enseignant->name ?? 'N/A' }}</small><br>
+                                <small>Salle: {{ $seance->salle->nom ?? 'N/A' }}</small>
+                            @else
+                                <em>—</em>
+                            @endif
+                        </td>
+                    @endforeach
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
-<script>
-    function filterSeances() {
-        const selectedType = document.getElementById('typeFilter').value.toLowerCase();
-        const rows = document.querySelectorAll('.seance-row');
-
-        rows.forEach(row => {
-            const rowType = row.getAttribute('data-type').toLowerCase();
-            if (!selectedType || rowType === selectedType) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-</script>

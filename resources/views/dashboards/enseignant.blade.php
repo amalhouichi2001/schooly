@@ -58,7 +58,7 @@
                 <i class="bi bi-journal-text fs-1 text-success"></i>
                 <h5 class="card-title mt-3">Exercices</h5>
                 <p class="card-text">Voir Exercices.</p>
-                <a href="{{ route('enseignant.exercice') }}" class="btn btn-outline-success">Voir</a>
+                <a href="{{ route('exercices.index')}}" class="btn btn-outline-success">Voir</a>
             </div>
         </div>
     </div>

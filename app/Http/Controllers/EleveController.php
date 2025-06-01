@@ -2,11 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ExerciceAnswersImport;
-
-
-
 use App\Models\Classe;
 use App\Models\User;
 use App\Models\Exercice;
@@ -15,10 +11,8 @@ use App\Models\Seance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
-
 use Illuminate\Support\Facades\Storage;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 class EleveController extends Controller
 {
@@ -27,37 +21,40 @@ class EleveController extends Controller
         $eleves = User::where('role', 'eleve')->get();
         return view('eleves.index', compact('eleves'));
     }
-    public function ExerciceAnswersImport(Request $request)
+
+    public function import(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,csv'
         ]);
 
-        // Excel::import(new ExerciceAnswersImport, $request->file('file'));
+        Excel::import(new ExerciceAnswersImport, $request->file('file'));
 
         return back()->with('success', 'Réponses importées avec succès.');
     }
+
     public function monEmploi()
     {
         $eleve = Auth::user();
-
+$classes = Classe::all();
+$emploiDuTemps = Seance::all();
         if (!$eleve || $eleve->role !== 'eleve') {
             return redirect()->back()->withErrors('Accès refusé ou en attente d’activation.');
         }
 
-        $seances = Seance::with('matiere')->get();
         $emploiDuTemps = Seance::where('emploi_class_id', $eleve->classe_id)
+            ->with('matiere')
             ->orderByRaw("FIELD(date, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche')")
             ->orderBy('heure_debut')
             ->get();
 
-
-        return view('eleves.emploi', compact('emploiDuTemps'));
+      return view('eleves.emploi', compact('classes', 'emploiDuTemps'));
     }
 
+  
     public function exercices()
     {
-        $exercices = Exercice::with('matiere')->get(); // chargement de la relation
+        $exercices = Exercice::with('matiere')->get();
         return view('eleves.exercices', compact('exercices'));
     }
 
@@ -66,17 +63,6 @@ class EleveController extends Controller
         $exercice = Exercice::with('matiere')->findOrFail($id);
         return view('eleves.exercice_detail', compact('exercice'));
     }
-public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file|mimes:xlsx,csv'
-    ]);
-
-    Excel::import(new ExerciceAnswersImport, $request->file('file'));
-
-    return back()->with('success', 'Réponses importées avec succès.');
-}
-
 
     public function showInscriptionForm($id)
     {
@@ -98,7 +84,7 @@ public function import(Request $request)
             'prenom' => 'required|string|max:255',
             'adresse' => 'nullable|string|max:255',
             'date_naissance' => 'required|date',
-            'classe_id' => 'required|exists:classes,id',
+            'classe_id' => 'nullable|exists:classes,id',
             'email' => 'required|email|unique:users,email',
             'telephone' => 'required|string|max:20',
             'gender' => 'required|in:male,female',
@@ -118,7 +104,7 @@ public function import(Request $request)
             'prenom' => $validated['prenom'],
             'adresse' => $validated['adresse'] ?? null,
             'date_naissance' => $validated['date_naissance'],
-            'classe_id' => $validated['classe_id'],
+            'classe_id' => $validated['classe_id'] ?? null,
             'telephone' => $validated['telephone'],
             'gender' => $validated['gender'],
             'email' => $validated['email'],
@@ -127,30 +113,27 @@ public function import(Request $request)
             'profile_photo_path' => $photoPath,
         ]);
 
-        // 🔗 Lier le parent connecté s'il est authentifié
         $authUser = Auth::user();
         if ($authUser && $authUser->role === 'parent') {
             $user->parents()->attach($authUser->id);
         } elseif (isset($validated['parents'])) {
-            // Cas admin : assigner manuellement des parents
             $user->parents()->sync($validated['parents']);
         }
 
-        // 🧾 Créer l’inscription non payée
         Inscription::create([
             'eleve_id' => $user->id,
             'date_inscription' => now(),
             'validee' => false,
-            'classe_id' => $validated['classe_id'],
+            'classe_id' => $validated['classe_id'] ?? null,
             'statut' => 'non payée',
         ]);
-        if ($authUser && $authUser->role === 'parent') {
-              return redirect()->route('parents.inscriptions')->with('success', 'Élève ajouté avec succès.');
-        } else {
-            return redirect()->route('eleves.index')->with('success', 'Élève ajouté avec succès.');
-        }
-    }
 
+        if ($authUser && $authUser->role === 'parent') {
+            return redirect()->route('parents.inscriptions')->with('success', 'Élève ajouté avec succès.');
+        }
+
+        return redirect()->route('classes.index')->with('success', 'Élève ajouté avec succès.');
+    }
 
     public function show($id)
     {
@@ -183,28 +166,22 @@ public function import(Request $request)
         ]);
 
         if ($request->hasFile('profile_photo_path')) {
-            // Supprimer l'ancienne photo si elle existe
             if ($eleve->profile_photo_path && Storage::disk('public')->exists($eleve->profile_photo_path)) {
                 Storage::disk('public')->delete($eleve->profile_photo_path);
             }
-
-            $photoPath = $request->file('profile_photo_path')->store('eleves', 'public');
-            $validated['profile_photo_path'] = $photoPath;
+            $validated['profile_photo_path'] = $request->file('profile_photo_path')->store('eleves', 'public');
         }
 
-        // Gérer le mot de passe
-        if ($validated['password'] ?? false) {
+        if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
-            unset($validated['password']); // Ne pas modifier si vide
+            unset($validated['password']);
         }
 
         $eleve->update($validated);
 
         return redirect()->route('eleves.index')->with('success', 'Élève mis à jour.');
     }
-
-
 
     public function destroy($id)
     {

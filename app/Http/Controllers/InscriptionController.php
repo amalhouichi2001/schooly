@@ -35,16 +35,18 @@ class InscriptionController extends Controller
    
 
     
-    // Traitement du paiement
-    public function payer(Request $request, $id)
-    {
-        $inscription = Inscription::findOrFail($id);
-        $inscription->statut = 'payee';
-        
-        $inscription->save();
+   
 
-        return redirect()->route('parents.inscriptions')->with('success', 'Paiement effectué avec succès.');
-    }
+
+public function form($id)
+{
+    $inscription = Inscription::with('eleve')->findOrFail($id); // charge aussi l'élève
+
+    $user = $inscription->eleve; // élève associé
+
+    return view('parents.paiement', compact('inscription', 'user'));
+}
+
 
     // Générer facture PDF
     public function genererFacturePDF($id)
@@ -54,12 +56,53 @@ class InscriptionController extends Controller
         return $pdf->download('facture_paiement_' . $inscription->id . '.pdf');
     }
 
-    // Affiche la liste de toutes les inscriptions
-    public function index()
-    {
-        $inscriptions = Inscription::with(['eleve'])->get();
-        return view('inscriptions.index', compact('inscriptions'));
+ public function index()
+{
+    $user = auth()->user();
+
+    if ($user->isAdmin()) {
+        $inscriptions = Inscription::with('eleve')->get();
+    } elseif ($user->isParent()) {
+        $enfantsIds = $user->enfants->pluck('id');
+
+        $inscriptions = Inscription::with('eleve')
+            ->whereIn('eleve_id', $enfantsIds)
+            ->get();
+    } else {
+        $inscriptions = collect(); // vide pour les autres rôles
     }
+
+    return view('inscription.index', compact('inscriptions', 'user'));
+}
+public function create($user_id)
+{
+    $user = User::where('id', $user_id)
+                ->where('role', 'eleve')
+                ->firstOrFail();
+
+    return view('parents.paiement', compact('user'));
+}
+public function showPaiement($inscriptionId)
+{
+    $inscription = Inscription::findOrFail($inscriptionId); // ou autre logique
+    $user = auth()->user(); // ou récupérer l'utilisateur associé
+
+   
+    return view('parents.paiement', [
+    'inscription' => $inscription,
+    'user' => $user
+]);
+}
+
+public function payer($id)
+{
+    $inscription = Inscription::findOrFail($id);
+    $inscription->statut = 'payee';
+    $inscription->save();
+
+    return redirect()->route('parents.paiement.form', $id)->with('success', 'Paiement effectué avec succès.');
+}
+
 
    
 

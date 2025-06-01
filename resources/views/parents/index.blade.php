@@ -3,7 +3,9 @@
 @section('content')
 <div class="container">
     <h1>Liste des Parents</h1>
-    
+
+    {{-- Bouton pour créer un nouveau parent --}}
+    <a href="{{ route('parents.create') }}" class="btn btn-primary mb-3">+ Ajouter un Parent</a>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -23,7 +25,7 @@
         <tbody>
             @foreach ($parents as $parent)
                 <tr>
-                    <td>{{ $parent->nom }}</td>
+                    <td>{{ $parent->name }}</td>
                     <td>{{ $parent->prenom }}</td>
                     <td>{{ $parent->email }}</td>
                     <td>{{ $parent->telephone }}</td>

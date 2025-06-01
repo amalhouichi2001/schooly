@@ -34,14 +34,14 @@
                 <td>{{ $inscription->statut === 'payee' ? 'payée' : 'non payée' }}</td>
 
                 <td>
-                    @if($inscription->statut != 'payee')
-                    <form action="{{ route('parents.paiement', $inscription->id) }}" method="POST" style="display:inline-block;">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Payer</button>
-                    </form>
-                    @else
-                    <a href="{{ route('parents.facture.pdf', $inscription->id) }}" class="btn btn-success">Télécharger Facture</a>
-                    @endif
+                   <td>
+    @if($inscription->statut != 'payee')
+        <a href="{{ route('parents.paiement.form', $inscription->id) }}" class="btn btn-primary">Payer</a>
+    @else
+        <a href="{{ route('parents.facture.pdf', $inscription->id) }}" class="btn btn-success">Télécharger Facture</a>
+    @endif
+</td>
+
 
                 </td>
             </tr>

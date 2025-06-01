@@ -88,6 +88,28 @@
                 </div>
             </div>
         </div>
+       <div class="col">
+    <div class="card shadow border-0 h-100">
+        <div class="card-body text-center">
+            <i class="bi bi-book-fill fs-1 text-primary"></i> <!-- Icône pour matières -->
+            <h5 class="card-title mt-3">Matières</h5>
+            <p class="card-text">Liste des matières enseignées</p>
+            <a href="{{ route('matieres.index') }}" class="btn btn-outline-primary">Gérer</a>
+        </div>
+    </div>
+</div>
+
+<div class="col">
+    <div class="card shadow border-0 h-100">
+        <div class="card-body text-center">
+            <i class="bi bi-building fs-1 text-success"></i> <!-- Icône pour salles -->
+            <h5 class="card-title mt-3">Salles</h5>
+            <p class="card-text">Gestion des salles</p>
+            <a href="{{ route('salles.index') }}" class="btn btn-outline-success">Gérer</a>
+        </div>
+    </div>
+</div>
+
 
     </div>
 </div>

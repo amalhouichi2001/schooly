@@ -12,7 +12,7 @@
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
-
+<a href="{{ route('emploi.index') }}" class="btn btn-outline-primary">Emploi de temps</a>
             @if($eleves->isEmpty())
                 <p class="text-muted">Aucun enfant enregistré pour le moment.</p>
             @else
@@ -33,8 +33,10 @@
                                 <td>{{ \Carbon\Carbon::parse($enfant->date_naissance)->format('d/m/Y') }}</td>
                                 <td>
                                     <a href="{{ route ('classes.bulletin', [$enfant->classe_id, $enfant->id]) }}" class="btn btn-info btn-sm">Voir</a>
-                                
+                                    
                                 </td>
+                                
+
                             </tr>
                         @endforeach
                     </tbody>

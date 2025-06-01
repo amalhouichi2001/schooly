@@ -8,9 +8,14 @@
 
             <!-- Nom -->
             <div class="mb-4">
-                <x-input-label for="name" :value="__('Nom complet')" />
+                <x-input-label for="name" :value="__('Nom ')" />
                 <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            </div>
+            <div class="mb-4">
+                <x-input-label for="prenom" :value="__('prenom ')" />
+                <x-text-input id="prenom" class="block mt-1 w-full" type="text" name="prenom" :value="old('prenom')" required autofocus autocomplete="name" />
+                <x-input-error :messages="$errors->get('prenom')" class="mt-2" />
             </div>
                     <!-- Role -->
             <div class="form-group">

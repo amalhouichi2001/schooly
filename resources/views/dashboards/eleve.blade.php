@@ -4,7 +4,15 @@
 <div class="container py-5">
     <h1 class="mb-4 text-center text-primary">Tableau de Bord - Élève</h1>
     <p class="text-center">Bienvenue, <strong>{{ Auth::user()->name }}</strong> 👋</p>
-
+ @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $message)
+                    <li>{{ $message }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-4">
 
         <!-- Notes -->
@@ -26,7 +34,7 @@
                     <i class="bi bi-calendar-week fs-1 text-primary"></i>
                     <h5 class="card-title mt-3">Emploi du Temps</h5>
                     <p class="card-text">Voir votre emploi du temps.</p>
-                    <a href="{{ route('eleves.emploi') }}" class="btn btn-outline-primary">Voir</a>
+                    <a href="{{ route('emploi.index') }}" class="btn btn-outline-primary">Voir</a>
                 </div>
             </div>
         </div>

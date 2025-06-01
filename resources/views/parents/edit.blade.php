@@ -8,8 +8,12 @@
         @method('PUT')
 
         @include('parents.form', ['parent' => $parent])
+        
 
         <button type="submit" class="btn btn-primary">Mettre à jour</button>
     </form>
 </div>
 @endsection
+
+
+

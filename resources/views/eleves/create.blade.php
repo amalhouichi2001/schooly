@@ -53,14 +53,14 @@
                 <label for="date_naissance" class="form-label">Date de naissance</label>
                 <input type="date" name="date_naissance" class="form-control">
             </div>
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
                 <label for="classe_id" class="form-label">Classe</label>
                 <select name="classe_id" class="form-select">
                     @foreach($classes as $classe)
                     <option value="{{ $classe->id }}">{{ $classe->nom }}</option>
                     @endforeach
                 </select>
-            </div>
+            </div> -->
             <div class="col-md-4">
                 <label for="parent_id" class="form-label">Parent</label>
                 <select name="parent_id" class="form-select" required>

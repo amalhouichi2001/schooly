@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Absence;
+use App\Models\Inscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Hash;
 class ParentUserController extends Controller
 {
     /**
@@ -35,22 +36,24 @@ class ParentUserController extends Controller
      * Enregistre un nouveau parent dans la base de données.
      */
     public function store(Request $request)
-    {
+{
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string|max:255',
-            // Ajouter role parent par défaut
-        ]);
+        'name' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'telephone' => 'nullable|string|max:20',
+        'adresse' => 'nullable|string|max:255',
+        'password' => 'required|string|min:6|confirmed', // ajoute la validation du mot de passe
+    ]);
 
-        $validated['role'] = 'parent';
+    $validated['role'] = 'parent';
+    $validated['password'] = Hash::make($validated['password']); // hash du mot de passe
 
-        User::create($validated);
+    User::create($validated);
 
-        return redirect()->route('parents.index')->with('success', 'Parent ajouté avec succès.');
-    }
+    return redirect()->route('parents.index')->with('success', 'Parent ajouté avec succès.');
+}
+
 
     /**
      * Affiche le formulaire de modification d'un parent.
@@ -66,7 +69,7 @@ class ParentUserController extends Controller
     public function update(Request $request, User $parent)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $parent->id,
             'telephone' => 'nullable|string|max:20',
@@ -107,6 +110,27 @@ class ParentUserController extends Controller
         $eleve = User::findOrFail($id);
         return view('eleves.show', compact('eleve'));
     }
+public function showPaiementForm($id)
+{
+    $inscription = Inscription::findOrFail($id);
+    return view('parents.paiement_form', compact('inscription'));
+}
+
+public function validerPaiement(Request $request, $id)
+{
+    $request->validate([
+        'montant' => 'required|numeric|min:0',
+        'methode' => 'required|string',
+    ]);
+
+    $inscription = Inscription::findOrFail($id);
+
+    // Logique de traitement du paiement ici (tu peux l'ajouter plus tard)
+    $inscription->statut = 'payee';
+    $inscription->save();
+
+    return redirect()->route('parents.inscriptions')->with('success', 'Paiement effectué avec succès.');
+}
 
     /**
      * Affiche les absences des enfants du parent connecté.

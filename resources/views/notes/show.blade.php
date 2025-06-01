@@ -1,25 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2>Détails de la note</h2>
-
-    <!-- Affichage des détails de la note -->
-    <div class="card">
+<div class="container mt-5">
+    <div class="card shadow">
         <div class="card-header">
-            Détails de la note
+            <h4>Détail de la note</h4>
         </div>
-       
-    <div class="container">
-        <h2>Détail de la Note</h2>
-        <p><strong>Élève :</strong> {{ $note->eleve->name ?? 'Inconnu' }}</p>
-        <p><strong>Matière :</strong> {{ $note->matiere->nom ?? 'Inconnue' }}</p>
-        <p><strong>Valeur :</strong> {{ $note->note }}</p>
-        <p><strong>Classe :</strong> {{ $note->classe->nom ?? 'Non définie' }}</p>
-    </div>
+        <div class="card-body">
 
-        <div class="card-footer">
-            <a href="{{ route('notes.index') }}" class="btn btn-secondary">Retour à la liste des notes</a>
+            <p><strong>Élève :</strong> {{ $note->eleve->nom }} {{ $note->eleve->prenom }}</p>
+
+            <p><strong>Matière :</strong> {{ $note->matiere->nom }}</p>
+
+            <p><strong>Classe :</strong> {{ $note->classe->nom }}</p>
+
+            <p><strong>Note :</strong> {{ $note->note }}/20</p>
+
+            <p><strong>Enseignant :</strong> {{ $note->enseignant->name ?? 'Inconnu' }}</p>
+
+            <p><strong>Date d’ajout :</strong> {{ $note->created_at->format('d/m/Y H:i') }}</p>
+
+            <a href="{{ route('notes.index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
         </div>
     </div>
 </div>

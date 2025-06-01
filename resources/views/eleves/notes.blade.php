@@ -9,8 +9,13 @@
             Aucune note disponible pour le moment.
         </div>
     @else
+        {{-- Calcul de la moyenne dans Blade --}}
+        @php
+            $moyenne = $notes->avg('note');
+        @endphp
+
         <div class="mb-4 text-center">
-            <h4 class="text-success">
+           <h4 class="text-success">
                 📊 Moyenne Générale : 
                 <span class="badge bg-success">{{ number_format($moyenne, 2) }}/20</span>
             </h4>

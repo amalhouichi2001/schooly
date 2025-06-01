@@ -45,7 +45,10 @@ class ClasseController extends Controller
         $moyenneClasse = count($moyennes) > 0 ? round(array_sum($moyennes) / count($moyennes), 2) : null;
 
         // Élèves sans classe pour la sélection
-        $elevesSansClasse = User::whereNull('classe_id')->get();
+        $elevesSansClasse = User::whereNull('classe_id')
+                       ->where('role', 'eleve')
+                       ->get();
+
 
         return view('classes.show', compact('classe', 'elevesDansClasse', 'elevesSansClasse', 'moyenneClasse'));
     }

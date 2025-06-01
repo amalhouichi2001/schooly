@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
         // Utilisateur admin
         $admin = DB::table('users')->insertGetId([
             'name' => 'Admin Principal',
+            'prenom'=>'prince',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'gender' => 'female',
@@ -48,6 +49,7 @@ class DatabaseSeeder extends Seeder
         // Enseignant
         $enseignant = DB::table('users')->insertGetId([
             'name' => 'M. Dupont',
+            'prenom'=>'prince',
             'email' => 'enseignant@example.com',
             'password' => Hash::make('password'),
             'role' => 'enseignant',
@@ -61,6 +63,7 @@ class DatabaseSeeder extends Seeder
         // Élève
         $eleve = DB::table('users')->insertGetId([
             'name' => 'Élève Martin',
+            'prenom'=>'prince',
             'email' => 'eleve@example.com',
             'password' => Hash::make('password'),
             'role' => 'eleve',
@@ -74,6 +77,7 @@ class DatabaseSeeder extends Seeder
         // Parent
         $parent = DB::table('users')->insertGetId([
             'name' => 'Mme Martin',
+            'prenom'=>'prince',
             'email' => 'parent@example.com',
             'password' => Hash::make('password'),
             'role' => 'parent',

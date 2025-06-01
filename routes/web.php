@@ -18,6 +18,9 @@ use App\Http\Controllers\SeanceController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\MatiereController;
 use App\Http\Controllers\SalleController;
+use App\Models\Inscription;
+use App\Models\Seance;
+
 /*
 |----------------------------------------------------------------------
 | Web Routes
@@ -63,24 +66,22 @@ Route::middleware('auth')->group(function () {
         Route::put('enseignants/{id}', [EnseignantController::class, 'update'])->name('update');
         Route::delete('enseignants/{id}', [EnseignantController::class, 'destroy'])->name('destroy');
     });
+Route::resource('seances', SeanceController::class);
 
     // matieres routes
     Route::prefix('matieres')->name('matieres.')->group(function () {
-        // Afficher la liste des matières
-        Route::get('/', [MatiereController::class, 'index'])->name('index');
-        // Afficher une matière et ses enseignants
-        Route::get('{matiere}', [MatiereController::class, 'show'])->name('show');
-        // Afficher le formulaire de création de matière
-        Route::get('/create', [MatiereController::class, 'create'])->name('create');
-        // Enregistrer une nouvelle matière
-        Route::post('/store', [MatiereController::class, 'store'])->name('store');
-        // Afficher le formulaire d'édition d'une matière
-        Route::get('{matiere}/edit', [MatiereController::class, 'edit'])->name('edit');
-        // Mettre à jour une matière
-        Route::put('{matiere}', [MatiereController::class, 'update'])->name('update');
-        // Supprimer une matière
-        Route::delete('{matiere}', [MatiereController::class, 'destroy'])->name('destroy');
-    });
+    // 1. Chemins fixes d'abord
+    Route::get('/', [MatiereController::class, 'index'])->name('index');
+    Route::get('/create', [MatiereController::class, 'create'])->name('create');
+    Route::post('/', [MatiereController::class, 'store'])->name('store');
+    Route::get('{matiere}/edit', [MatiereController::class, 'edit'])->name('edit');
+    Route::put('{matiere}', [MatiereController::class, 'update'])->name('update');
+    Route::delete('{matiere}', [MatiereController::class, 'destroy'])->name('destroy');
+
+    // 2. Route dynamique à la fin
+    Route::get('{matiere}', [MatiereController::class, 'show'])->name('show');
+});
+
     // salles routes
     Route::prefix('salles')->group(function () {
         Route::get('/', [SalleController::class, 'index'])->name('salles.index');
@@ -114,17 +115,31 @@ Route::middleware('auth')->group(function () {
     });
 
 
-    // inscription & paimen
+    Route::get('/paiement/{eleve_id}/create', [inscriptionController::class, 'create'])->name('parents.paiement');
+    Route::get('/parents/paiement/{id}', [InscriptionController::class, 'showPaiement'])->name('parents.paiement.payer');
+    Route::get('/paiement/{eleve_id}', [InscriptionController::class, 'form'])->name('paiement.form');
+Route::get('/paiement/{id}', [InscriptionController::class, 'form'])->name('parents.paiement.form');
+Route::post('/paiement/{id}', [InscriptionController::class, 'payer'])->name('parents.paiement.payer');
+
+Route::post('/paiement/{id}', [InscriptionController::class, 'payer'])->name('parents.paiement.payer');
+
+Route::get('/facture/{id}', [InscriptionController::class, 'genererFacturePDF'])->name('parents.facture');
+Route::get('/emploi', [SeanceController::class, 'index'])->name('emploi.index');
+
+
+    Route::post('/parents/paiement/{id}', [InscriptionController::class, 'payer'])->name('parents.paiement.payer');
+Route::get('/seances', [SeanceController::class, 'index'])->name('seances.index');
+    Route::post('/seances', [SeanceController::class, 'store'])->name('seances.store');
 
     // 🔐 Routes pour les parents
     Route::prefix('parents')->group(function () {
 
         // Liste et formulaire
-        Route::get('/inscriptions', [InscriptionController::class, 'inscriptions'])->name('parents.inscriptions');
+        Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('parents.inscriptions');
 
         // Créer une inscription pour un élève
         Route::post('/inscription/{eleve_id}', [InscriptionController::class, 'storeinscriptions'])->name('parents.inscription.store');
-
+        Route::post('parents/store', [ParentUserController::class, 'store'])->name('parents.store');
 
         //paiement
 
@@ -132,7 +147,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/facture/{id}', [InscriptionController::class, 'genererFacturePDF'])->name('parents.facture.pdf');
     });
-
+Route::get('/notes/existantes', [NoteController::class, 'voirNotesExistantes'])->name('notes.existantes');
+Route::resource('matieres', MatiereController::class);
     // 🧑‍💼 Routes pour l’admin
     Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/inscriptions', [InscriptionController::class, 'index'])->name('admin.inscriptions.index');
@@ -262,6 +278,10 @@ Route::post('/eleve/exercices/{id}/import', [EleveController::class, 'import'])-
 Route::get('/exercices/{id}/soumettre', [ExerciceController::class, 'formSoumission'])
     ->middleware(['auth'])
     ->name('exercices.soumettre');
+
+
+Route::get('/paiement/{id}', [ParentUserController::class, 'showPaiementForm'])->name('parents.paiement.form');
+Route::post('/paiement/{id}/valider', [ParentUserController::class, 'validerPaiement'])->name('parents.paiement.valider');
 
 // Soumettre le fichier
 Route::post('/exercices/{id}/soumettre', [ExerciceController::class, 'uploadReponse'])

@@ -37,33 +37,49 @@ public function classes()
         return view('enseignants.create', compact('matieres'));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'prenom' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed|min:8',
-            'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string|max:255',
-            'date_naissance' => 'nullable|date',
-            'gender' => 'nullable|in:male,female',
-            'matiere_id' => 'nullable|exists:matieres,id',
-            'profile_photo_path' => 'nullable|image|max:2048',
-            'statut' => 'in:active,desactive',
-        ]);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'adresse' => 'nullable|string|max:255',
+        'date_naissance' => 'required|date',
+        'email' => 'required|email|unique:users,email',
+        'telephone' => 'required|string|max:20',
+        'gender' => 'required|in:male,female',
+        'matiere_id' => 'nullable|exists:matieres,id',
+        'password' => 'required|string|min:6',
+        'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        'statut' => 'in:active,desactive',
+    ]);
 
-        $data['role'] = 'enseignant';
-        $data['password'] = bcrypt($data['password']);
-
-        if ($request->hasFile('profile_photo_path')) {
-            $data['profile_photo_path'] = $request->file('profile_photo_path')->store('photos', 'public');
-        }
-
-        User::create($data);
-
-        return redirect()->route('enseignants.index')->with('success', 'Enseignant ajouté avec succès.');
+    if ($request->hasFile('profile_photo_path')) {
+        $photoPath = $request->file('profile_photo_path')->store('enseignants', 'public');
+    } else {
+        // Avatar par défaut
+        $photoPath = 'images/default-avatar.png'; // Assure-toi que ce fichier existe dans public/images/
     }
+
+    $data = [
+        'name' => $validated['name'],
+        'prenom' => $validated['prenom'],
+        'adresse' => $validated['adresse'] ?? null,
+        'date_naissance' => $validated['date_naissance'],
+        'telephone' => $validated['telephone'],
+        'gender' => $validated['gender'],
+        'email' => $validated['email'],
+        'matiere_id' => $validated['matiere_id'] ?? null,
+        'password' => bcrypt($validated['password']),
+        'role' => 'enseignant',
+        'profile_photo_path' => $photoPath,
+        'statut' => $validated['statut'] ?? 'active',
+    ];
+
+    User::create($data);
+
+    return redirect()->route('enseignants.index')->with('success', 'Enseignant ajouté avec succès.');
+}
+
 
     public function edit($id)
     {

@@ -12,7 +12,9 @@ class Inscription extends Model
         'statut',
         'date_inscription'
     ];
-
+    protected $casts = [
+        'date_inscription' => 'datetime',
+    ];
     public function eleve()
     {
         return $this->belongsTo(User::class, 'eleve_id');

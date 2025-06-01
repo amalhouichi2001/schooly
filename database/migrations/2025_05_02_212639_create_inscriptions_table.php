@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('inscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('eleve_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('classe_id')->constrained()->onDelete('cascade');
+            $table->foreignId('classe_id')->nullable()->constrained()->onDelete('cascade');
+
             $table->date('date_inscription')->default(now());
             $table->enum('statut', ['payee', 'non payee'])->default('non payee');
             $table->timestamps();

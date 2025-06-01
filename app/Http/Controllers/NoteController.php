@@ -79,9 +79,34 @@ class NoteController extends Controller
             ]);
         }
 
-        return redirect()->route('notes.index')->with('success', 'Notes enregistrées avec succès.');
+        return redirect()->route('notes.show')->with('success', 'Notes enregistrées avec succès.');
 
     }
+public function voirNotesExistantes(Request $request)
+{
+    $classe_id = $request->input('classe_id');
+    $matiere_id = $request->input('matiere_id');
+
+    // Vérifie si les paramètres sont présents
+    if (!$classe_id || !$matiere_id) {
+        return redirect()->back()->withErrors('Classe et matière requises.');
+    }
+
+    // Récupère les élèves de la classe
+   $eleves = \App\Models\User::where('role', 'eleve')
+    ->where('classe_id', $classe_id)
+    ->get();
+
+
+    // Récupère les notes existantes pour la classe et la matière
+    $notesExistantes = \App\Models\Note::where('classe_id', $classe_id)
+        ->where('matiere_id', $matiere_id)
+        ->with('enseignant')
+        ->get()
+        ->keyBy('eleve_id');
+
+    return view('notes.existantes', compact('eleves', 'notesExistantes', 'classe_id', 'matiere_id'));
+}
 
     public function create()
     {
