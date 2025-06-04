@@ -1,64 +1,72 @@
-<x-guest-layout>
-    <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center text-indigo-600 mb-6">Créer un compte</h2>
-        <p class="text-sm text-gray-500 text-center mb-8">Rejoignez notre plateforme de gestion scolaire</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte</title>
 
-        <form method="POST" action="{{ route('register') }}">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-center text-indigo-600 mb-4">Créer un compte</h2>
+        <p class="text-sm text-gray-500 text-center mb-6">Rejoignez notre plateforme de gestion scolaire</p>
+
+        <form method="POST" action="{{ route('register') }}" class="space-y-4">
             @csrf
 
             <!-- Nom -->
-            <div class="mb-4">
-                <x-input-label for="name" :value="__('Nom ')" />
-                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nom</label>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                @error('name')
+                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
-            <div class="mb-4">
-                <x-input-label for="prenom" :value="__('prenom ')" />
-                <x-text-input id="prenom" class="block mt-1 w-full" type="text" name="prenom" :value="old('prenom')" required autofocus autocomplete="name" />
-                <x-input-error :messages="$errors->get('prenom')" class="mt-2" />
+
+            <!-- Prénom -->
+            <div>
+                <label for="prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+                <input id="prenom" type="text" name="prenom" value="{{ old('prenom') }}" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                @error('prenom')
+                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
-                    <!-- Role -->
-            <div class="form-group">
-                <label for="role">Rôle</label>
-                <select name="role" id="role" class="form-control" required>
+
+            <!-- Rôle -->
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700">Rôle</label>
+                <select id="role" name="role" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">-- Sélectionner --</option>
                     <option value="eleve">Élève</option>
                     <option value="enseignant">Enseignant</option>
                     <option value="parent">Parent</option>
                     <option value="admin">Admin</option>
                 </select>
+                @error('role')
+                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Email -->
-            <div class="mb-4">
-                <x-input-label for="email" :value="__('Adresse email')" />
-                <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Adresse e-mail</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                @error('email')
+                    <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Mot de passe -->
-            <div class="mb-4">
-                <x-input-label for="password" :value="__('Mot de passe')" />
-                <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
-            </div>
-
-            <!-- Confirmation du mot de passe -->
-            <div class="mb-6">
-                <x-input-label for="password_confirmation" :value="__('Confirmer le mot de passe')" />
-                <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-            </div>
-
-            <!-- Lien vers connexion + bouton -->
-            <div class="flex items-center justify-between">
-                <a class="text-sm text-gray-600 hover:text-indigo-600" href="{{ route('login') }}">
-                    {{ __('Déjà inscrit ?') }}
-                </a>
-
-                <x-primary-button class="ml-3">
-                    {{ __('S’inscrire') }}
-                </x-primary-button>
-            </div>
-        </form>
-    </div>
-</x-guest-layout>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                <input id="password" type="password" name="password" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                @error('password')
+                    <p class="text-sm text-red-600 mt-1">{{ $message

@@ -106,18 +106,18 @@ class DatabaseSeeder extends Seeder
 
         // Séance
         $seance = DB::table('seances')->insertGetId([
-            'emploi_class_id' => $classe1,
-            'emploi_enseignant_id' => $enseignant,
-            'date' => Carbon::today(),
-            'heure_debut' => '08:00:00',
-            'heure_fin' => '09:00:00',
-            'duration' => 60,
-            'matiere_id' => $matiere1,
-            'salle_id' => $salle1,
-            'type' => 'cours',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+    'classe_id' => $classe1,
+    'enseignant_id' => $enseignant,
+    'date' => Carbon::today(),
+    'heure_debut' => '08:00:00',
+    'heure_fin' => '09:00:00',
+    'duration' => 60,
+    'matiere_id' => $matiere1,
+    'salle_id' => $salle1,
+    'type' => 'cours',
+    'created_at' => now(),
+    'updated_at' => now(),
+]);
 
         // Absence
         DB::table('absences')->insert([

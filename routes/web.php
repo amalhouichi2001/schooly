@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\EleveController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\ClasseController;
 use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\NoteController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\EnseignantController;
 use App\Http\Controllers\ParentUserController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ExerciceController;
+use App\Http\Controllers\CongeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\SeanceController;
@@ -20,7 +22,8 @@ use App\Http\Controllers\MatiereController;
 use App\Http\Controllers\SalleController;
 use App\Models\Inscription;
 use App\Models\Seance;
-
+use App\Http\Controllers\FinancialRecordController;
+use App\Http\Controllers\DepenseController;
 /*
 |----------------------------------------------------------------------
 | Web Routes
@@ -38,6 +41,30 @@ use App\Models\Seance;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+Route::get('/financial-records', [FinancialRecordController::class, 'index'])->name('financial-records.index');
+Route::get('/financial-records/create/{enseignant}', [FinancialRecordController::class, 'create'])->name('financial-records.create');
+Route::post('/financial-records/store', [FinancialRecordController::class, 'store'])->name('financial-records.store');
+Route::get('/financial-records/{id}/edit', [FinancialRecordController::class, 'edit'])->name('financial-records.edit');
+Route::put('/financial-records/{id}', [FinancialRecordController::class, 'update'])->name('financial-records.update');
+Route::delete('/financial-records/{id}', [FinancialRecordController::class, 'destroy'])->name('financial-records.destroy');
+Route::get('/financial-records/print/{enseignant_id}', [FinancialRecordController::class, 'print'])->name('financial-records.print');
+Route::get('/financial-records/download-all', [FinancialRecordController::class, 'downloadAll'])->name('financial-records.download-all');
+
+
+Route::get('/conges', [CongeController::class, 'index'])->name('conges.index');
+Route::get('/conges/create', [CongeController::class, 'create'])->name('conges.create');
+Route::post('/conges', [CongeController::class, 'store'])->name('conges.store');
+Route::patch('/conges/{conge}/statut', [CongeController::class, 'updateStatut'])->name('conges.updateStatut');
+Route::get('/conges/{conge}/pdf', [CongeController::class, 'generatePdf'])->name('conges.pdf');
+
+Route::resource('events', EventController::class);
+Route::post('events/{event}/participate', [EventController::class, 'participate'])->name('events.participate');
+Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+
+
+Route::resource('depenses', DepenseController::class);
 
 
 

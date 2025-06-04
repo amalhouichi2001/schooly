@@ -3,29 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use HasFactory;
+
 class Seance extends Model
 {
-
-    
-
     protected $fillable = [
+        'classe_id',
+        'enseignant_id',
+        'matiere_id',
+        'salle_id',
         'date',
         'heure_debut',
         'heure_fin',
-        'matiere_id',
-        'enseignant_id',
-        'salle_id',
-        'classe_id',
-        'type',
         'duration',
+        'type',
     ];
 
-    // Relations
+    protected $casts = [
+        'date' => 'date',
+        'heure_debut' => 'datetime:H:i',
+        'heure_fin' => 'datetime:H:i',
+    ];
 
-    public function matiere()
+    public function classe()
     {
-        return $this->belongsTo(Matiere::class);
+        return $this->belongsTo(Classe::class);
     }
 
     public function enseignant()
@@ -33,13 +34,12 @@ class Seance extends Model
         return $this->belongsTo(User::class, 'enseignant_id');
     }
 
-    public function salle()
-    {
-        return $this->belongsTo(Salle::class);
-    }
 
-    public function classe()
-    {
-        return $this->belongsTo(Classe::class);
-    }
+    public function matiere() {
+    return $this->belongsTo(Matiere::class, 'matiere_id');
+}
+public function salle() {
+    return $this->belongsTo(Salle::class, 'salle_id');
+}
+
 }

@@ -127,8 +127,15 @@ class User extends Authenticatable
         return $this->belongsTo(Matiere::class);
     }
     
-
-  
+public function financialRecords()
+{
+    return $this->hasMany(FinancialRecord::class);
+}
+ public function events()
+{
+    return $this->belongsToMany(Event::class, 'event_user');
+}
+ 
     public function absencesEnseignant()
     {
         return $this->hasMany(Absence::class, 'enseignant_id');
@@ -168,6 +175,10 @@ public function enfants()
 public function parents()
 {
     return $this->belongsToMany(User::class, 'eleve_parent', 'eleve_id', 'parent_id');
+}
+public function eleves()
+{
+    return $this->belongsToMany(User::class, 'parent_eleve', 'parent_id', 'eleve_id');
 }
 
 

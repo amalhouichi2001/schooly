@@ -22,30 +22,28 @@ class MessageController extends Controller
     /**
      * Affiche les messages échangés avec un utilisateur donné.
      */
-public function show(User $user)
+// App\Http\Controllers\MessageController.php
+
+public function show($id)
 {
-    if ($user->id === Auth::id()) {
-        abort(403, 'Vous ne pouvez pas discuter avec vous-même.');
-    }
+    $currentUser = Auth::user();
 
-    // Marquer comme lus les messages reçus et non lus
-    Message::where('sender_id', $user->id)
-        ->where('receiver_id', Auth::id())
-        ->where('status', 'sent') // tu peux aussi vérifier le statut "sent" au lieu de lu false
-        ->update(['status' => 'read']);
+    // Récupérer l'utilisateur avec qui on discute
+    $user = User::findOrFail($id);
 
-    // Récupérer les messages entre l'utilisateur connecté et l'autre utilisateur avec pagination
-    $messages = Message::where(function ($query) use ($user) {
-        $query->where('sender_id', Auth::id())
-              ->where('receiver_id', $user->id);
-    })->orWhere(function ($query) use ($user) {
-        $query->where('sender_id', $user->id)
-              ->where('receiver_id', Auth::id());
-    })
-    ->orderBy('created_at', 'asc')
-    ->paginate(20);
+    // Récupérer tous les utilisateurs avec qui le user peut avoir des conversations
+    $users = User::where('id', '!=', $currentUser->id)->get();
 
-    return view('messages.chat', compact('user', 'messages'));
+    // Récupérer les messages entre les deux utilisateurs
+    $messages = Message::where(function ($query) use ($currentUser, $id) {
+        $query->where('sender_id', $currentUser->id)
+              ->where('receiver_id', $id);
+    })->orWhere(function ($query) use ($currentUser, $id) {
+        $query->where('sender_id', $id)
+              ->where('receiver_id', $currentUser->id);
+    })->orderBy('created_at', 'asc')->paginate(20);
+
+    return view('messages.chat', compact('user', 'users', 'messages'));
 }
 
     /**
